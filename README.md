@@ -1,4 +1,4 @@
-﻿# 馃幍 Sekai Song Player 路 浜屾鍏冮煶涔愭挱鏀惧櫒
+# 馃幍 Sekai Song Player 路 浜屾鍏冮煶涔愭挱鏀惧櫒
 
 > **LRC 姝岃瘝鍚屾 路 缃戞槗浜戝垎浜摼鎺ョ洿鎾?路 鎺堟潈浣撶郴**
 > Anime music player with LRC lyrics sync, NetEase share-link playback & licensing system
@@ -64,7 +64,7 @@ mvn spring-boot:run
 
 
 <p align="center">
-  <img src="screenshots/demo.gif" alt="Demo" width="720"/>
+  <img src="screenshots/demo.webp" alt="Demo" width="720"/>
 </p>
 ---
 
