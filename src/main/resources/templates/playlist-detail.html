@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${playlist.name + ' - Sekai Song'}">Playlist</title>
+    <link rel="stylesheet" th:href="@{/css/app.css(v=20260527e)}" href="/css/app.css?v=20260527e">
+</head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments :: sidebar('playlists')}"></div>
+    <main class="content">
+        <section class="playlist-hero">
+            <img th:src="${#strings.isEmpty(playlist.coverUrl) ? '/images/login-music-room.png' : playlist.coverUrl}" alt="">
+            <div>
+                <h1 th:text="${playlist.name}">Playlist</h1>
+                <p th:text="${playlist.description}">Description</p>
+                <a class="pill-btn" th:if="${!#lists.isEmpty(playlistSongs)}" th:href="@{/playlists/{id}/play(id=${playlist.id})}">播放歌单</a>
+                <a class="pill-btn ghost" th:href="@{/playlists/{id}/edit(id=${playlist.id})}">编辑歌单</a>
+                <a class="pill-btn"
+                   th:if="${!#strings.isEmpty(playlist.neteasePlaylistId)}"
+                   th:href="@{'https://music.163.com/#/playlist?id=' + ${playlist.neteasePlaylistId}}"
+                   target="_blank">打开网易云原歌单</a>
+            </div>
+        </section>
+
+        <div class="server-message success" th:if="${message}" th:text="${message}"></div>
+        <div class="server-message error" th:if="${error}" th:text="${error}"></div>
+
+        <section class="editor-panel bulk-audio-panel">
+            <div class="section-title">
+                <h2>批量绑定本地音频</h2>
+                <span th:text="${licenseStatus != null and licenseStatus.vip ? 'VIP 已解锁' : 'VIP 功能'}">VIP 功能</span>
+            </div>
+            <div class="bulk-audio-actions" th:if="${licenseStatus != null and licenseStatus.vip}">
+                <form class="bulk-audio-card"
+                      th:action="@{/playlists/{id}/audio-folder(id=${playlist.id})}"
+                      method="post"
+                      enctype="multipart/form-data">
+                    <div class="bulk-audio-copy">
+                        <strong>选择音乐文件夹</strong>
+                        <span>浏览器上传，适合远程给客户配置。</span>
+                    </div>
+                    <input id="audioFolder"
+                           name="audioFiles"
+                           type="file"
+                           accept=".mp3,.flac,.m4a,.wav,.ogg,.aac,.lrc,audio/*,text/plain"
+                           multiple
+                           webkitdirectory
+                           directory>
+                    <button type="submit">自动匹配并绑定</button>
+                </form>
+                <form class="bulk-audio-card local-folder-path-form"
+                      th:action="@{/playlists/{id}/audio-folder-path(id=${playlist.id})}"
+                      method="post">
+                    <div class="bulk-audio-copy">
+                        <strong>填写本机路径</strong>
+                        <span>项目和音乐在同一台电脑时更快。</span>
+                    </div>
+                    <input id="audioFolderPath" name="folderPath" placeholder="例如 D:\Music\Netease">
+                    <button type="submit">扫描路径并绑定</button>
+                </form>
+                <form class="bulk-audio-card metadata-resync-form"
+                      th:action="@{/playlists/{id}/audio-metadata/resync(id=${playlist.id})}"
+                      method="post">
+                    <div class="bulk-audio-copy">
+                        <strong>重新读取已绑定文件</strong>
+                        <span>用于老数据补内嵌歌词、同目录 LRC 和真实时长。</span>
+                    </div>
+                    <button type="submit">同步歌词/时长</button>
+                </form>
+            </div>
+            <p th:if="${licenseStatus == null or !licenseStatus.vip}">
+                升级专业版或永久 VIP 后，可一次选择整个音乐文件夹，系统会按歌名和歌手自动匹配歌单歌曲并绑定本地 FLAC/MP3。
+            </p>
+            <small>文件名建议类似“歌手 - 歌名.flac”或直接“歌名.flac”。如果项目和音乐文件都在客户同一台电脑上，填写文件夹路径比浏览器上传更快，也不受几 GB 请求大小限制。</small>
+        </section>
+
+        <section class="editor-panel" th:if="${!#strings.isEmpty(playlist.neteasePlaylistId)}">
+            <div class="section-title"><h2>整单播放</h2><span>网易云外链</span></div>
+            <iframe class="netease-playlist-player"
+                    th:src="@{'https://music.163.com/outchain/player?type=0&id=' + ${playlist.neteasePlaylistId} + '&auto=0&height=430'}"
+                    frameborder="0"
+                    allow="autoplay; encrypted-media"></iframe>
+        </section>
+
+        <form class="search-bar" th:action="@{/playlists/{id}/songs/add(id=${playlist.id})}" method="post">
+            <select name="songId">
+                <option th:each="song : ${songs}" th:value="${song.id}" th:text="${song.title + ' - ' + song.artist}">Song</option>
+            </select>
+            <button type="submit">加入歌单</button>
+        </form>
+
+        <div class="song-list">
+            <div class="song-row" th:each="song : ${playlistSongs}">
+                <a th:href="@{/player/{id}(id=${song.id}, playlistId=${playlist.id}, autoplay=1)}">
+                    <strong th:text="${song.title}">Song</strong>
+                    <span th:text="${song.artist + ' · ' + song.animeTitle}">Artist</span>
+                    <em th:if="${!#strings.isEmpty(song.neteaseSongId)}">网易云可播放</em>
+                </a>
+                <form class="playlist-upload-form"
+                      th:if="${!#strings.isEmpty(song.bilibiliEmbedParam)}"
+                      th:action="@{/songs/video/{id}(id=${song.id})}"
+                      method="post"
+                      enctype="multipart/form-data">
+                    <input type="hidden" name="returnTo" th:value="${'/playlists/' + playlist.id}">
+                    <label th:for="${'playlistVideoFile-' + song.id}" th:text="${#strings.isEmpty(song.localVideoUrl) ? '上传本地视频' : '替换本地视频'}">上传本地视频</label>
+                    <input th:id="${'playlistVideoFile-' + song.id}" name="videoFile" type="file" accept=".mp4,.webm,.m4v,.mov,.mkv,video/*" required>
+                    <button type="submit">绑定</button>
+                </form>
+                <form th:action="@{/playlists/{playlistId}/songs/remove/{songId}(playlistId=${playlist.id}, songId=${song.id})}" method="post">
+                    <button type="submit">移除</button>
+                </form>
+            </div>
+            <p class="empty" th:if="${#lists.isEmpty(playlistSongs)}">这个歌单还没有歌曲，先从上面的下拉框加入歌曲。</p>
+        </div>
+    </main>
+</div>
+</body>
+</html>
+
+
+
+

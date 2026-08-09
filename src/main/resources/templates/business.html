@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sekai Song - 商业化方案</title>
+    <link rel="stylesheet" th:href="@{/css/app.css(v=20260527e)}" href="/css/app.css?v=20260527e">
+</head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments :: sidebar('business')}"></div>
+    <main class="content business-page">
+        <section class="business-hero">
+            <div>
+                <p class="eyebrow">Private Anime Music Library</p>
+                <h1>Sekai Song 私有音乐库服务</h1>
+                <p>把这个项目卖成“自托管音乐库搭建与定制服务”，收软件部署、主题设计、数据迁移和长期维护的钱，不售卖也不分发任何第三方歌曲资源。</p>
+                <div class="service-actions">
+                    <a href="/service" target="_blank" rel="noopener">公开服务页</a>
+                    <a href="/business/leads">查看咨询线索</a>
+                    <a href="/business/orders">订单收款台账</a>
+                    <a href="/business/licenses">授权码管理</a>
+                </div>
+            </div>
+            <div class="business-hero-card">
+                <strong>推荐定位</strong>
+                <span>个人收藏管理</span>
+                <span>NAS / 家庭服务器部署</span>
+                <span>本地合法音频播放</span>
+            </div>
+        </section>
+
+        <section class="business-strip">
+            <article>
+                <span>1</span>
+                <strong>卖部署</strong>
+                <p>帮用户把项目部署到 Windows、NAS 或云服务器。</p>
+            </article>
+            <article>
+                <span>2</span>
+                <strong>卖定制</strong>
+                <p>二次元主题、歌单封面、播放器皮肤、移动端样式。</p>
+            </article>
+            <article>
+                <span>3</span>
+                <strong>卖维护</strong>
+                <p>备份恢复、版本升级、媒体库整理、故障排查。</p>
+            </article>
+        </section>
+
+        <section class="business-grid">
+            <article class="business-panel">
+                <div class="section-title"><h2>可售套餐</h2><span>先从服务赚钱</span></div>
+                <div class="pricing-list">
+                    <div>
+                        <strong>基础部署</strong>
+                        <span>￥99 - ￥199</span>
+                        <p>本机或 NAS 部署、账号初始化、基础歌单演示。</p>
+                    </div>
+                    <div>
+                        <strong>主题定制</strong>
+                        <span>￥299 - ￥599</span>
+                        <p>专属首页、播放器视觉、歌单封面和二次元氛围优化。</p>
+                    </div>
+                    <div>
+                        <strong>长期维护</strong>
+                        <span>￥29 - ￥59/月</span>
+                        <p>故障处理、数据备份、版本更新、使用指导。</p>
+                    </div>
+                </div>
+            </article>
+
+            <article class="business-panel">
+                <div class="section-title"><h2>合规边界</h2><span>不要卖曲库</span></div>
+                <ul class="check-list">
+                    <li>只提供播放器、部署、整理和定制服务。</li>
+                    <li>用户自行上传其拥有合法使用权的音频或视频。</li>
+                    <li>不公开分发 QQ 音乐、网易云、B 站等平台内容。</li>
+                    <li>不宣传“免费听付费歌曲”或“破解曲库”。</li>
+                    <li>公开演示环境使用自制音乐、授权音乐或无版权素材。</li>
+                </ul>
+            </article>
+        </section>
+
+        <section class="business-panel">
+            <div class="section-title"><h2>上线检查清单</h2><span>拿出去接单前</span></div>
+            <div class="launch-grid">
+                <div>
+                    <strong>产品页</strong>
+                    <p>截图、功能列表、套餐价格、部署流程、售后范围。</p>
+                </div>
+                <div>
+                    <strong>演示库</strong>
+                    <p>只放自制或授权音频，避免用真实商业歌曲做公开演示。</p>
+                </div>
+                <div>
+                    <strong>备份策略</strong>
+                    <p>数据库 SQL 备份、上传目录备份、外部上传目录路径说明。</p>
+                </div>
+                <div>
+                    <strong>用户协议</strong>
+                    <p>写明用户对上传内容负责，平台只提供私有化工具。</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="business-panel copy-panel">
+            <div class="section-title"><h2>对外介绍文案</h2><span>可直接用</span></div>
+            <p>我提供一套私有化二次元音乐库系统搭建服务，支持本地音频上传、歌单管理、歌词展示、收藏循环、播放器皮肤和自托管部署。服务不提供任何歌曲资源，用户仅上传自己拥有合法使用权的内容，适合个人收藏、家庭服务器和 NAS 音乐库管理。</p>
+        </section>
+    </main>
+</div>
+</body>
+</html>
+
+
+
+

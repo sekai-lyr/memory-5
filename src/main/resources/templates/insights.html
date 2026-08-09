@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sekai Song - 音乐资产洞察</title>
+    <link rel="stylesheet" th:href="@{/css/app.css(v=20260529a)}" href="/css/app.css?v=20260529a">
+</head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments :: sidebar('insights')}"></div>
+    <main class="content">
+        <section class="insight-hero">
+            <div>
+                <span class="eyebrow">VIP MUSIC ASSET OS</span>
+                <h1>音乐资产洞察中心</h1>
+                <p>把歌库从“能播放”升级成“能交付、能演示、能维护、能收费”的客户资产。</p>
+            </div>
+            <div class="insight-score" th:if="${report != null}">
+                <strong th:text="${report.assetScore}">0</strong>
+                <span th:text="${report.assetLabel}">资产评分</span>
+            </div>
+        </section>
+
+        <section class="editor-panel locked-panel" th:if="${licenseStatus == null or !licenseStatus.vip}">
+            <div class="section-title"><h2>VIP 功能</h2><span>音乐资产洞察</span></div>
+            <p>激活 VIP 后可以查看本地化率、歌词覆盖率、歌单健康度、修复建议和商品卖点文案。</p>
+            <a class="pill-btn" href="/license">去激活</a>
+        </section>
+
+        <th:block th:if="${report != null}">
+            <section class="insight-summary">
+                <article>
+                    <span>歌曲</span>
+                    <strong th:text="${report.songCount}">0</strong>
+                    <small th:text="${report.totalDurationLabel}">0 分钟</small>
+                </article>
+                <article>
+                    <span>歌单</span>
+                    <strong th:text="${report.playlistCount}">0</strong>
+                    <small>可整理为不同交付包</small>
+                </article>
+                <article>
+                    <span>本地化率</span>
+                    <strong th:text="${report.localReadyPercent + '%'}">0%</strong>
+                    <small th:text="${report.localReadyCount + ' 首可离线'}">0 首可离线</small>
+                </article>
+                <article>
+                    <span>歌词覆盖</span>
+                    <strong th:text="${report.lyricPercent + '%'}">0%</strong>
+                    <small th:text="${report.lyricCount + ' 首有歌词'}">0 首有歌词</small>
+                </article>
+            </section>
+
+            <section class="editor-panel insight-main-card">
+                <div class="section-title">
+                    <h2 th:text="${report.assetLabel}">资产状态</h2>
+                    <span th:text="${report.assetScore + '/100'}">0/100</span>
+                </div>
+                <p th:text="${report.assetHint}">提示</p>
+                <div class="insight-meter">
+                    <i th:style="${'width:' + report.assetScore + '%'}"></i>
+                </div>
+                <textarea class="sales-copy" readonly th:text="${report.salesPitch}">销售文案</textarea>
+            </section>
+
+            <section class="insight-grid">
+                <div class="editor-panel">
+                    <div class="section-title"><h2>来源结构</h2><span>Source</span></div>
+                    <div class="metric-list">
+                        <article th:each="metric : ${report.sourceMetrics}" th:classappend="${metric.cssClass}">
+                            <div>
+                                <strong th:text="${metric.name}">来源</strong>
+                                <small th:text="${metric.detail}">说明</small>
+                            </div>
+                            <b th:text="${metric.count + ' / ' + metric.percent + '%'}">0</b>
+                        </article>
+                    </div>
+                </div>
+                <div class="editor-panel">
+                    <div class="section-title"><h2>体验指标</h2><span>Quality</span></div>
+                    <div class="metric-list">
+                        <article th:each="metric : ${report.contentMetrics}" th:classappend="${metric.cssClass}">
+                            <div>
+                                <strong th:text="${metric.name}">指标</strong>
+                                <small th:text="${metric.detail}">说明</small>
+                            </div>
+                            <b th:text="${metric.percent + '%'}">0%</b>
+                        </article>
+                    </div>
+                </div>
+            </section>
+
+            <section class="editor-panel">
+                <div class="section-title"><h2>下一步动作</h2><span>Action</span></div>
+                <div class="action-list">
+                    <article th:each="action : ${report.actions}" th:classappend="${action.level}">
+                        <div>
+                            <strong th:text="${action.title}">动作</strong>
+                            <p th:text="${action.detail}">说明</p>
+                        </div>
+                        <a th:href="${action.actionUrl}" th:text="${action.actionText}">去处理</a>
+                    </article>
+                </div>
+            </section>
+
+            <section class="insight-grid">
+                <div class="editor-panel">
+                    <div class="section-title"><h2>高频歌手</h2><span>Top</span></div>
+                    <div class="artist-cloud">
+                        <span th:each="artist : ${report.topArtists}">
+                            <b th:text="${artist.name}">Artist</b>
+                            <small th:text="${artist.count + ' 首'}">0 首</small>
+                        </span>
+                    </div>
+                </div>
+                <div class="editor-panel">
+                    <div class="section-title"><h2>商品包装建议</h2><span>Sell</span></div>
+                    <p class="insight-advice">
+                        你现在别只卖“播放器”，要卖“客户专属歌库整理服务”：导入歌单、绑定本地无损、补歌词、做交付体检、给客户激活授权。
+                    </p>
+                    <div class="insight-cta-row">
+                        <a class="pill-btn" href="/delivery-tools">交付体检</a>
+                        <a class="pill-btn ghost" href="/business">商业化</a>
+                    </div>
+                </div>
+            </section>
+
+            <section class="editor-panel">
+                <div class="section-title"><h2>歌单健康排行</h2><span th:text="${#lists.size(report.playlistInsights) + ' 个'}">0 个</span></div>
+                <div class="playlist-insight-table">
+                    <div class="playlist-insight-row header">
+                        <span>歌单</span><span>评分</span><span>本地化</span><span>歌词</span><span>建议</span>
+                    </div>
+                    <a class="playlist-insight-row"
+                       th:each="playlist : ${report.playlistInsights}"
+                       th:href="@{/playlists/{id}(id=${playlist.playlistId})}">
+                        <span th:text="${playlist.playlistName}">歌单</span>
+                        <b th:text="${playlist.qualityScore}">0</b>
+                        <em th:text="${playlist.localReadyPercent + '%'}">0%</em>
+                        <em th:text="${playlist.lyricPercent + '%'}">0%</em>
+                        <small th:text="${playlist.actionHint}">建议</small>
+                    </a>
+                </div>
+            </section>
+        </th:block>
+    </main>
+</div>
+</body>
+</html>

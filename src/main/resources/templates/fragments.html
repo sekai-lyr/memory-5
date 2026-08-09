@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<body>
+<aside class="sidebar" th:fragment="sidebar(active)">
+    <a class="logo" href="/home">Sekai Song</a>
+    <nav>
+        <a th:classappend="${active == 'home'} ? 'active'" href="/home">主页</a>
+        <a th:classappend="${active == 'songs'} ? 'active'" href="/songs">歌曲库</a>
+        <a th:classappend="${active == 'playlists'} ? 'active'" href="/playlists">歌单</a>
+        <a th:classappend="${active == 'favorites'} ? 'active'" href="/favorites">收藏</a>
+        <a th:classappend="${active == 'netease'} ? 'active'" href="/netease">网易云</a>
+        <a th:classappend="${active == 'qq'} ? 'active'" href="/qq">QQ 音乐</a>
+        <a th:classappend="${active == 'bilibili'} ? 'active'" href="/bilibili">B 站</a>
+        <a th:classappend="${active == 'insights'} ? 'active'" href="/insights">资产洞察</a>
+        <a th:classappend="${active == 'smart'} ? 'active'" href="/smart-playlists">智能歌单</a>
+        <a th:classappend="${active == 'maintenance'} ? 'active'" href="/vip-tools">VIP维护</a>
+        <a th:classappend="${active == 'delivery'} ? 'active'" href="/delivery-tools">交付体检</a>
+        <a th:classappend="${active == 'license'} ? 'active'" href="/license">授权</a>
+        <a th:if="${businessAdmin}"
+           th:classappend="${active == 'business'} ? 'active'" href="/business">商业化</a>
+    </nav>
+    <nav class="sidebar-bottom">
+        <a th:classappend="${active == 'search'} ? 'active'" href="/search">搜索</a>
+    </nav>
+    <div class="user-box">
+        <strong th:text="${loginUser.nickName}">Sekai</strong>
+        <span class="license-mini"
+              th:if="${licenseStatus != null}"
+              th:classappend="${licenseStatus.valid} ? ' valid' : ' expired'"
+              th:text="${licenseStatus.message}">永久授权已生效</span>
+        <a href="/logout">退出</a>
+    </div>
+</aside>
+</body>
+</html>
+
+
+
+

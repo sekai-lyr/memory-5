@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sekai Song - 智能歌单</title>
+    <link rel="stylesheet" th:href="@{/css/app.css(v=20260528a)}" href="/css/app.css?v=20260528a">
+</head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments :: sidebar('smart')}"></div>
+    <main class="content business-page smart-page">
+        <div class="section-title">
+            <h1>智能歌单工厂</h1>
+            <span>规则生成 / 自动去重 / 随机编排</span>
+        </div>
+        <div class="server-message success" th:if="${message}" th:text="${message}"></div>
+        <div class="server-message error" th:if="${error}" th:text="${error}"></div>
+
+        <section class="business-panel maintenance-lock-panel"
+                 th:if="${licenseStatus == null or !licenseStatus.vip}">
+            <div>
+                <p class="eyebrow">VIP Tool</p>
+                <h2>智能歌单工厂需要 VIP 授权</h2>
+                <p>它可以按来源、本地化状态、收藏、关键词和随机规则自动生成歌单，适合客户歌库很大时快速整理交付。</p>
+            </div>
+            <a class="primary-link-button" href="/license">去激活 VIP</a>
+        </section>
+
+        <section class="smart-stats" th:if="${licenseStatus != null and licenseStatus.vip}">
+            <article>
+                <span>全部歌曲</span>
+                <strong th:text="${stats.totalSongs}">0</strong>
+            </article>
+            <article>
+                <span>本地音频</span>
+                <strong th:text="${stats.localAudioSongs}">0</strong>
+            </article>
+            <article>
+                <span>B站视频</span>
+                <strong th:text="${stats.bilibiliSongs}">0</strong>
+            </article>
+            <article>
+                <span>收藏</span>
+                <strong th:text="${stats.favoriteSongs}">0</strong>
+            </article>
+            <article>
+                <span>需本地化</span>
+                <strong th:text="${stats.thirdPartyOnlySongs}">0</strong>
+            </article>
+        </section>
+
+        <section class="business-panel smart-generator"
+                 th:if="${licenseStatus != null and licenseStatus.vip}">
+            <div class="section-title">
+                <h2>生成规则</h2>
+                <span>最多一次生成 500 首</span>
+            </div>
+            <form action="/smart-playlists/generate" method="post" class="smart-form">
+                <label>
+                    歌单名称
+                    <input name="playlistName" placeholder="例如 本地可播放精选 / 夜间随机歌单">
+                </label>
+                <label>
+                    来源范围
+                    <select name="sourceMode">
+                        <option value="all">全部歌曲</option>
+                        <option value="offline">离线可播放：本地音频 + 本地视频</option>
+                        <option value="local-audio">只要本地音频</option>
+                        <option value="local-video">只要本地视频</option>
+                        <option value="bilibili">只要 B 站视频音乐</option>
+                        <option value="netease">只要网易云来源</option>
+                        <option value="qq">只要 QQ 音乐来源</option>
+                        <option value="third-party-only">只要还没本地化的第三方链接</option>
+                        <option value="missing-local-audio">只要未绑定本地音频的普通歌曲</option>
+                    </select>
+                </label>
+                <label>
+                    关键词
+                    <input name="keyword" placeholder="歌名 / 歌手 / 动漫 / 标签 / 心情">
+                </label>
+                <label>
+                    数量限制
+                    <input name="limit" type="number" min="1" max="500" value="50">
+                </label>
+                <label>
+                    排序方式
+                    <select name="sortMode">
+                        <option value="recent">最近更新优先</option>
+                        <option value="favorite">收藏优先</option>
+                        <option value="title">歌名排序</option>
+                        <option value="artist">歌手排序</option>
+                    </select>
+                </label>
+                <label>
+                    封面 URL
+                    <input name="coverUrl" placeholder="可不填，默认取第一首歌封面">
+                </label>
+                <div class="smart-options">
+                    <label><input type="checkbox" name="favoriteOnly" value="true"> 仅收藏歌曲</label>
+                    <label><input type="checkbox" name="deduplicate" value="true" checked> 自动去重</label>
+                    <label><input type="checkbox" name="shuffle" value="true"> 随机打乱</label>
+                </div>
+                <button type="submit">生成智能歌单</button>
+            </form>
+        </section>
+
+        <section class="smart-presets" th:if="${licenseStatus != null and licenseStatus.vip}">
+            <article>
+                <strong>客户交付歌单</strong>
+                <span>范围选“离线可播放”，打开自动去重，适合交付给别人电脑。</span>
+            </article>
+            <article>
+                <strong>补文件清单</strong>
+                <span>范围选“还没本地化的第三方链接”，快速找出需要下载/上传的歌。</span>
+            </article>
+            <article>
+                <strong>随机电台</strong>
+                <span>数量填 30 到 80，打开随机打乱，直接做每日随机播放歌单。</span>
+            </article>
+        </section>
+    </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sekai.song.mapper.SekaiSongUserMapper">
+    <insert id="insert" parameterType="com.sekai.song.model.User" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sekai_song_user(user_name, password, nick_name, avatar_url, license_plan, license_expire_time, license_code)
+        VALUES (#{userName}, #{password}, #{nickName}, #{avatarUrl}, #{licensePlan}, #{licenseExpireTime}, #{licenseCode})
+    </insert>
+
+    <select id="findByUserName" resultType="com.sekai.song.model.User">
+        SELECT * FROM sekai_song_user WHERE user_name = #{userName} LIMIT 1
+    </select>
+
+    <select id="findById" resultType="com.sekai.song.model.User">
+        SELECT * FROM sekai_song_user WHERE id = #{id} LIMIT 1
+    </select>
+
+    <update id="updateLicense">
+        UPDATE sekai_song_user
+        SET license_plan = #{licensePlan},
+            license_expire_time = #{licenseExpireTime},
+            license_code = #{licenseCode},
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+</mapper>

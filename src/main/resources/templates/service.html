@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sekai Song 私有音乐库搭建服务</title>
+    <link rel="stylesheet" th:href="@{/css/app.css(v=20260527e)}" href="/css/app.css?v=20260527e">
+</head>
+<body>
+<main class="public-service-page">
+    <section class="service-hero">
+        <div>
+            <p class="eyebrow">Self-hosted Music Library</p>
+            <h1>给你的本地音乐，搭一个漂亮的私有播放器</h1>
+            <p>支持本地 FLAC / MP3、歌单、歌词、封面、B 站本地视频和二次元播放器皮肤。服务只做部署和定制，不提供任何第三方歌曲资源。</p>
+            <div class="service-actions">
+                <a href="#consult">预约搭建</a>
+                <a href="/login">已有系统登录</a>
+            </div>
+        </div>
+        <div class="service-demo-card">
+            <strong>Sekai Song</strong>
+            <span>私有化部署</span>
+            <span>歌单迁移整理</span>
+            <span>主题美化定制</span>
+        </div>
+    </section>
+
+    <section class="service-section">
+        <div class="section-title"><h2>适合谁</h2><span>本地收藏玩家</span></div>
+        <div class="business-strip">
+            <article>
+                <span>01</span>
+                <strong>动漫音乐收藏</strong>
+                <p>把 OP、ED、插曲、角色歌按作品和心情整理成自己的音乐宇宙。</p>
+            </article>
+            <article>
+                <span>02</span>
+                <strong>NAS / 家庭服务器</strong>
+                <p>部署在自己的机器上，音乐文件和数据库都由你自己掌控。</p>
+            </article>
+            <article>
+                <span>03</span>
+                <strong>想要定制界面</strong>
+                <p>做成你喜欢的二次元风格，播放器、歌单、封面都能继续扩展。</p>
+            </article>
+        </div>
+    </section>
+
+    <section class="business-grid service-section">
+        <article class="business-panel">
+            <div class="section-title"><h2>服务套餐</h2><span>可按需求调整</span></div>
+            <div class="pricing-list">
+                <div>
+                    <strong>基础部署</strong>
+                    <span>￥99 - ￥199</span>
+                    <p>Java、MySQL、项目启动、账号初始化、基础使用指导。</p>
+                </div>
+                <div>
+                    <strong>进阶整理</strong>
+                    <span>￥199 - ￥399</span>
+                    <p>歌单结构整理、本地音频绑定、封面和歌词基础校对。</p>
+                </div>
+                <div>
+                    <strong>主题定制</strong>
+                    <span>￥299 起</span>
+                    <p>专属首页、播放器视觉、配色、歌单封面和移动端适配。</p>
+                </div>
+            </div>
+        </article>
+        <article class="business-panel">
+            <div class="section-title"><h2>服务边界</h2><span>先说清楚</span></div>
+            <ul class="check-list">
+                <li>不提供歌曲下载、破解、曲库售卖。</li>
+                <li>用户自行准备拥有合法使用权的音频或视频。</li>
+                <li>可协助部署、整理、迁移、备份和美化。</li>
+                <li>公开演示只使用授权或自制素材。</li>
+            </ul>
+        </article>
+    </section>
+
+    <section id="consult" class="business-panel consult-panel">
+        <div class="section-title"><h2>预约咨询</h2><span>留下需求，我来报价</span></div>
+        <div class="server-message success" th:if="${message}" th:text="${message}"></div>
+        <div class="server-message error" th:if="${error}" th:text="${error}"></div>
+        <form class="consult-form" action="/service/leads" method="post">
+            <label>
+                你的称呼 *
+                <input name="name" placeholder="例如：小林" required>
+            </label>
+            <label>
+                联系方式 *
+                <input name="contact" placeholder="微信 / QQ / 邮箱 / 闲鱼昵称" required>
+            </label>
+            <label>
+                想要的服务 *
+                <select name="plan" required>
+                    <option value="">请选择</option>
+                    <option value="基础部署">基础部署</option>
+                    <option value="进阶整理">进阶整理</option>
+                    <option value="主题定制">主题定制</option>
+                    <option value="长期维护">长期维护</option>
+                    <option value="功能定制">功能定制</option>
+                </select>
+            </label>
+            <label>
+                预算范围
+                <select name="budget">
+                    <option value="">暂不确定</option>
+                    <option value="100以内">100以内</option>
+                    <option value="100-300">100-300</option>
+                    <option value="300-800">300-800</option>
+                    <option value="800以上">800以上</option>
+                </select>
+            </label>
+            <label class="consult-wide">
+                需求说明
+                <textarea name="message" placeholder="例如：想部署到 Windows，本地有 300 首 FLAC，希望做成二次元播放器风格。"></textarea>
+            </label>
+            <button type="submit">提交咨询</button>
+        </form>
+    </section>
+</main>
+</body>
+</html>
+
+
+
+

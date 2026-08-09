@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sekai.song.mapper.SekaiSongTrackMapper">
+    <sql id="libraryFilter">
+        AND (audio_url IS NULL OR audio_url NOT LIKE '%bilibili.com%')
+    </sql>
+
+    <insert id="insert" parameterType="com.sekai.song.model.Song" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sekai_song_track(user_id, title, artist, anime_title, album_name, cover_url, audio_url, local_audio_url, local_video_url,
+                                     skin_url, tags, mood, lyric_text, duration_seconds, favorite)
+        VALUES (#{userId}, #{title}, #{artist}, #{animeTitle}, #{albumName}, #{coverUrl}, #{audioUrl}, #{localAudioUrl}, #{localVideoUrl},
+                #{skinUrl}, #{tags}, #{mood}, #{lyricText}, #{durationSeconds}, #{favorite})
+    </insert>
+
+    <update id="update" parameterType="com.sekai.song.model.Song">
+        UPDATE sekai_song_track
+        SET title = #{title},
+            artist = #{artist},
+            anime_title = #{animeTitle},
+            album_name = #{albumName},
+            cover_url = #{coverUrl},
+            audio_url = #{audioUrl},
+            local_audio_url = COALESCE(#{localAudioUrl}, local_audio_url),
+            local_video_url = COALESCE(#{localVideoUrl}, local_video_url),
+            skin_url = #{skinUrl},
+            tags = #{tags},
+            mood = #{mood},
+            lyric_text = #{lyricText},
+            duration_seconds = #{durationSeconds},
+            update_time = NOW()
+        WHERE id = #{id} AND user_id = #{userId}
+    </update>
+
+    <delete id="deleteByIdAndUserId">
+        DELETE FROM sekai_song_track WHERE id = #{id} AND user_id = #{userId}
+    </delete>
+
+    <update id="updateFavorite">
+        UPDATE sekai_song_track SET favorite = #{favorite}, update_time = NOW()
+        WHERE id = #{id} AND user_id = #{userId}
+    </update>
+
+    <update id="updateLocalAudioUrl">
+        UPDATE sekai_song_track SET local_audio_url = #{localAudioUrl}, update_time = NOW()
+        WHERE id = #{id} AND user_id = #{userId}
+    </update>
+
+    <update id="updateLocalAudioMetadata">
+        UPDATE sekai_song_track
+        SET local_audio_url = #{localAudioUrl}
+            <if test="lyricText != null and lyricText != ''">
+                , lyric_text = #{lyricText}
+            </if>
+            <if test="durationSeconds != null">
+                , duration_seconds = #{durationSeconds}
+            </if>
+            , update_time = NOW()
+        WHERE id = #{id} AND user_id = #{userId}
+    </update>
+
+    <update id="updateLyricMetadata">
+        UPDATE sekai_song_track
+        SET update_time = NOW()
+            <if test="lyricText != null and lyricText != ''">
+                , lyric_text = #{lyricText}
+            </if>
+            <if test="durationSeconds != null">
+                , duration_seconds = #{durationSeconds}
+            </if>
+        WHERE id = #{id} AND user_id = #{userId}
+    </update>
+
+    <update id="updateLocalVideoUrl">
+        UPDATE sekai_song_track SET local_video_url = #{localVideoUrl}, update_time = NOW()
+        WHERE id = #{id} AND user_id = #{userId}
+    </update>
+
+    <select id="findByIdAndUserId" resultType="com.sekai.song.model.Song">
+        SELECT * FROM sekai_song_track WHERE id = #{id} AND user_id = #{userId} LIMIT 1
+    </select>
+
+    <select id="findByAudioUrlAndUserId" resultType="com.sekai.song.model.Song">
+        SELECT * FROM sekai_song_track WHERE audio_url = #{audioUrl} AND user_id = #{userId} LIMIT 1
+    </select>
+
+    <select id="listByUserId" resultType="com.sekai.song.model.Song">
+        SELECT * FROM sekai_song_track
+        WHERE user_id = #{userId}
+        <if test="keyword != null and keyword != ''">
+            AND (title LIKE CONCAT('%', #{keyword}, '%')
+            OR artist LIKE CONCAT('%', #{keyword}, '%')
+            OR anime_title LIKE CONCAT('%', #{keyword}, '%')
+            OR tags LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        ORDER BY favorite DESC, update_time DESC, id DESC
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <select id="listAllByUserId" resultType="com.sekai.song.model.Song">
+        SELECT * FROM sekai_song_track WHERE user_id = #{userId}
+        ORDER BY favorite DESC, update_time DESC, id DESC
+    </select>
+
+    <select id="listLibraryByUserId" resultType="com.sekai.song.model.Song">
+        SELECT * FROM sekai_song_track
+        WHERE user_id = #{userId}
+        <include refid="libraryFilter"/>
+        <if test="keyword != null and keyword != ''">
+            AND (title LIKE CONCAT('%', #{keyword}, '%')
+            OR artist LIKE CONCAT('%', #{keyword}, '%')
+            OR anime_title LIKE CONCAT('%', #{keyword}, '%')
+            OR tags LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        ORDER BY favorite DESC, update_time DESC, id DESC
+        LIMIT #{offset}, #{pageSize}
+    </select>
+
+    <select id="listAllLibraryByUserId" resultType="com.sekai.song.model.Song">
+        SELECT * FROM sekai_song_track
+        WHERE user_id = #{userId}
+        <include refid="libraryFilter"/>
+        ORDER BY favorite DESC, update_time DESC, id DESC
+    </select>
+
+    <select id="listFavoritesByUserId" resultType="com.sekai.song.model.Song">
+        SELECT * FROM sekai_song_track WHERE user_id = #{userId} AND favorite = 1
+        ORDER BY update_time DESC, id DESC
+    </select>
+
+    <select id="countByUserId" resultType="int">
+        SELECT COUNT(*) FROM sekai_song_track
+        WHERE user_id = #{userId}
+        <if test="keyword != null and keyword != ''">
+            AND (title LIKE CONCAT('%', #{keyword}, '%')
+            OR artist LIKE CONCAT('%', #{keyword}, '%')
+            OR anime_title LIKE CONCAT('%', #{keyword}, '%')
+            OR tags LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+    </select>
+
+    <select id="countLibraryByUserId" resultType="int">
+        SELECT COUNT(*) FROM sekai_song_track
+        WHERE user_id = #{userId}
+        <include refid="libraryFilter"/>
+        <if test="keyword != null and keyword != ''">
+            AND (title LIKE CONCAT('%', #{keyword}, '%')
+            OR artist LIKE CONCAT('%', #{keyword}, '%')
+            OR anime_title LIKE CONCAT('%', #{keyword}, '%')
+            OR tags LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+    </select>
+</mapper>

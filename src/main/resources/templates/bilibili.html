@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sekai Song - B 站视频音乐</title>
+    <link rel="stylesheet" th:href="@{/css/app.css(v=20260527e)}" href="/css/app.css?v=20260527e">
+</head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments :: sidebar('bilibili')}"></div>
+    <main class="content">
+        <div class="section-title"><h1>B 站视频音乐</h1><span>视频 / 作品集</span></div>
+
+        <section class="editor-panel">
+            <div class="server-message success" th:if="${message}" th:text="${message}"></div>
+            <div class="server-message error" th:if="${error}" th:text="${error}"></div>
+            <form class="grid-form netease-song-import" th:action="@{/bilibili/import}" method="post">
+                <label>
+                    目标歌单
+                    <select name="playlistId">
+                        <option value="">B站视频音乐</option>
+                        <option th:each="playlist : ${playlists}"
+                                th:value="${playlist.id}"
+                                th:text="${playlist.name}">SeKai</option>
+                    </select>
+                </label>
+                <textarea name="videoIds"
+                          th:text="${videoIds}"
+                          placeholder="每行一个 B 站 BV 号、av 号、视频链接或作品集链接；也支持网络检查里复制出的 bvid / aid / season_id / series_id 字段"></textarea>
+                <button type="submit">导入 B 站视频</button>
+            </form>
+            <div class="import-help">
+                <strong>把 B 站视频当作音乐收听</strong>
+                <span>导入后会写入你选择的本地歌单，并用项目播放器直接播放视频音乐。</span>
+                <span>支持 BV 号、av 号、bilibili.com 视频链接、space.bilibili.com 作品集/合集链接；b23.tv 短链在导入时会自动尝试展开。</span>
+                <span class="compliance-note">商业化使用时，请只导入你拥有合法使用权的内容；本系统不提供视频资源售卖或公开分发服务。</span>
+            </div>
+        </section>
+
+        <section class="editor-panel">
+            <div class="section-title"><h2>视频识别</h2><span>可选</span></div>
+            <form class="search-bar" action="/bilibili" method="get">
+                <input name="link" th:value="${link}" placeholder="粘贴一个 B 站视频或作品集链接用于识别">
+                <button type="submit">识别</button>
+            </form>
+            <p class="empty" th:if="${bilibiliLink.type == 'unknown' || bilibiliLink.type == 'empty' || bilibiliLink.type == 'short'}"
+               th:text="${bilibiliLink.message}">
+                支持 https://www.bilibili.com/video/BV... 或 space.bilibili.com/.../lists/... 这样的链接。
+            </p>
+            <a class="open-cloud"
+               th:if="${bilibiliLink.video && !#strings.isEmpty(bilibiliLink.id)}"
+               th:href="@{'https://www.bilibili.com/video/' + ${bilibiliLink.id}}"
+               target="_blank"
+               rel="noopener">在 B 站打开</a>
+            <a class="open-cloud"
+               th:if="${bilibiliLink.collection && !#strings.isEmpty(link)}"
+               th:href="${link}"
+               target="_blank"
+               rel="noopener">打开作品集</a>
+        </section>
+    </main>
+</div>
+</body>
+</html>
+
+
+
+

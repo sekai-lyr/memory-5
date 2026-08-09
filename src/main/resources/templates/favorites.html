@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sekai Song - 收藏</title>
+    <link rel="stylesheet" th:href="@{/css/app.css(v=20260527e)}" href="/css/app.css?v=20260527e">
+</head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments :: sidebar('favorites')}"></div>
+    <main class="content">
+        <div class="section-title"><h1>收藏歌曲</h1><span th:text="${#lists.size(songs) + ' 首'}">0 首</span></div>
+        <section class="card-grid">
+            <article class="song-card" th:each="song : ${songs}">
+                <a th:href="@{/player/{id}(id=${song.id})}">
+                    <img th:src="${#strings.isEmpty(song.coverUrl) ? '/images/login-music-room.png' : song.coverUrl}" alt="">
+                    <strong th:text="${song.title}">Song</strong>
+                    <span th:text="${song.artist + ' · ' + song.animeTitle}">Artist</span>
+                </a>
+            </article>
+        </section>
+        <p class="empty" th:if="${#lists.isEmpty(songs)}">还没有收藏歌曲。</p>
+    </main>
+</div>
+</body>
+</html>
+
+
+
+

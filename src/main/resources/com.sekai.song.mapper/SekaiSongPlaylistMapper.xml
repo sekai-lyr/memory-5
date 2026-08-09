@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sekai.song.mapper.SekaiSongPlaylistMapper">
+    <insert id="insert" parameterType="com.sekai.song.model.Playlist" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO sekai_song_playlist(user_id, name, description, cover_url)
+        VALUES (#{userId}, #{name}, #{description}, #{coverUrl})
+    </insert>
+
+    <update id="update" parameterType="com.sekai.song.model.Playlist">
+        UPDATE sekai_song_playlist
+        SET name = #{name}, description = #{description}, cover_url = #{coverUrl}, update_time = NOW()
+        WHERE id = #{id} AND user_id = #{userId}
+    </update>
+
+    <delete id="deleteByIdAndUserId">
+        DELETE FROM sekai_song_playlist WHERE id = #{id} AND user_id = #{userId}
+    </delete>
+
+    <select id="findByIdAndUserId" resultType="com.sekai.song.model.Playlist">
+        SELECT p.*, COUNT(ps.song_id) AS song_count
+        FROM sekai_song_playlist p
+        LEFT JOIN sekai_song_playlist_song ps ON p.id = ps.playlist_id
+        WHERE p.id = #{id} AND p.user_id = #{userId}
+        GROUP BY p.id
+        LIMIT 1
+    </select>
+
+    <select id="findByNameAndUserId" resultType="com.sekai.song.model.Playlist">
+        SELECT p.*, COUNT(ps.song_id) AS song_count
+        FROM sekai_song_playlist p
+        LEFT JOIN sekai_song_playlist_song ps ON p.id = ps.playlist_id
+        WHERE p.name = #{name} AND p.user_id = #{userId}
+        GROUP BY p.id
+        ORDER BY p.id ASC
+        LIMIT 1
+    </select>
+
+    <select id="listByUserId" resultType="com.sekai.song.model.Playlist">
+        SELECT p.*, COUNT(ps.song_id) AS song_count
+        FROM sekai_song_playlist p
+        LEFT JOIN sekai_song_playlist_song ps ON p.id = ps.playlist_id
+        WHERE p.user_id = #{userId}
+        GROUP BY p.id
+        ORDER BY p.update_time DESC, p.id DESC
+    </select>
+
+    <insert id="addSong">
+        INSERT INTO sekai_song_playlist_song(playlist_id, song_id)
+        VALUES (#{playlistId}, #{songId})
+    </insert>
+
+    <delete id="removeSong">
+        DELETE FROM sekai_song_playlist_song WHERE playlist_id = #{playlistId} AND song_id = #{songId}
+    </delete>
+
+    <select id="existsSong" resultType="int">
+        SELECT COUNT(*) FROM sekai_song_playlist_song
+        WHERE playlist_id = #{playlistId} AND song_id = #{songId}
+    </select>
+
+    <select id="listSongs" resultType="com.sekai.song.model.Song">
+        SELECT t.* FROM sekai_song_track t
+        INNER JOIN sekai_song_playlist_song ps ON t.id = ps.song_id
+        INNER JOIN sekai_song_playlist p ON p.id = ps.playlist_id
+        WHERE ps.playlist_id = #{playlistId} AND p.user_id = #{userId} AND t.user_id = #{userId}
+        ORDER BY ps.id ASC
+    </select>
+</mapper>

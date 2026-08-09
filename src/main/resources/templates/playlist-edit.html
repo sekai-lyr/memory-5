@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${'编辑 ' + playlist.name + ' - Sekai Song'}">Edit Playlist</title>
+    <link rel="stylesheet" th:href="@{/css/app.css(v=20260527e)}" href="/css/app.css?v=20260527e">
+</head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments :: sidebar('playlists')}"></div>
+    <main class="content">
+        <div class="section-title">
+            <h1>编辑歌单</h1>
+            <span th:text="${playlist.name}">Playlist</span>
+        </div>
+
+        <div class="server-message success" th:if="${message}" th:text="${message}"></div>
+        <div class="server-message error" th:if="${error}" th:text="${error}"></div>
+
+        <section class="editor-panel playlist-edit-panel">
+            <div class="playlist-cover-preview">
+                <img th:src="${#strings.isEmpty(playlist.coverUrl) ? '/images/login-music-room.png' : playlist.coverUrl}" alt="">
+                <div>
+                    <strong th:text="${playlist.name}">Playlist</strong>
+                    <span th:text="${playlist.songCount == null ? '0 首歌曲' : playlist.songCount + ' 首歌曲'}">0 首歌曲</span>
+                </div>
+            </div>
+            <form class="grid-form playlist-edit-form" th:action="@{/playlists/update/{id}(id=${playlist.id})}" method="post">
+                <label>
+                    歌单名称
+                    <input name="name" th:value="${playlist.name}" placeholder="歌单名称 *" required>
+                </label>
+                <label>
+                    封面 URL
+                    <input name="coverUrl" th:value="${playlist.coverUrl}" placeholder="https://...">
+                </label>
+                <label>
+                    歌单描述
+                    <textarea name="description" th:text="${playlist.description}" placeholder="写一点这张歌单的感觉"></textarea>
+                </label>
+                <div class="form-actions">
+                    <a class="pill-btn ghost" th:href="@{/playlists/{id}(id=${playlist.id})}">取消</a>
+                    <button type="submit">保存修改</button>
+                </div>
+            </form>
+        </section>
+    </main>
+</div>
+</body>
+</html>
+
+
+
+

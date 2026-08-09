@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sekai Song - 注册</title>
+    <link rel="stylesheet" th:href="@{/css/register.css(v=20260514)}" href="/css/register.css?v=20260514">
+</head>
+<body>
+<main class="register-page">
+    <section class="register-card">
+        <a class="back-link" href="/login">返回登录</a>
+        <h1>创建 Sekai Song</h1>
+        <p>给你的动漫音乐收藏开一个新档案。</p>
+        <div class="server-message error" th:if="${error}" th:text="${error}"></div>
+        <form id="registerForm" action="/user/register" method="post">
+            <label for="userName">用户名</label>
+            <input id="userName" name="userName" type="text" placeholder="例如 sekai_listener" required>
+            <label for="nickName">昵称</label>
+            <input id="nickName" name="nickName" type="text" placeholder="播放器里显示的名字">
+            <label for="password">密码</label>
+            <input id="password" name="password" type="password" placeholder="至少 6 位" required>
+            <label for="confirmPassword">确认密码</label>
+            <input id="confirmPassword" name="confirmPassword" type="password" placeholder="再输入一次" required>
+            <div class="error-text" id="registerError"></div>
+            <button type="submit">注册</button>
+        </form>
+    </section>
+</main>
+<script th:src="@{/js/register.js}" src="/js/register.js"></script>
+</body>
+</html>
+
+
+
+

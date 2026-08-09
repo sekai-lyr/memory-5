@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sekai Song - 授权</title>
+    <link rel="stylesheet" th:href="@{/css/app.css(v=20260527e)}" href="/css/app.css?v=20260527e">
+</head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments :: sidebar('license')}"></div>
+    <main class="content business-page">
+        <section class="license-hero">
+            <div>
+                <p class="eyebrow">License Center</p>
+                <h1>VIP 授权中心</h1>
+                <p>试用账号可以体验基础歌单和播放器；专业版 / 永久版会解锁批量导入、本地音频绑定、B 站视频本地绑定等高级能力。</p>
+            </div>
+            <div class="license-status-card" th:classappend="${licenseStatus.valid} ? ' valid' : ' expired'">
+                <strong th:text="${licenseStatus.label}">永久版</strong>
+                <span th:text="${licenseStatus.message}">永久授权已生效</span>
+                <small th:text="${licenseStatus.actionText}">VIP 高级功能可用</small>
+                <small th:if="${licenseStatus.expireTime != null}"
+                       th:text="${'到期时间：' + #temporals.format(licenseStatus.expireTime, 'yyyy-MM-dd HH:mm')}">到期时间</small>
+                <small th:if="${licenseStatus.expireTime == null}">到期时间：永久</small>
+            </div>
+        </section>
+
+        <section class="vip-feature-grid">
+            <article th:each="feature : ${vipFeatures}" th:classappend="${feature.enabled} ? ' enabled' : ' locked'">
+                <div>
+                    <strong th:text="${feature.name}">VIP 功能</strong>
+                    <span th:text="${feature.tag}">VIP</span>
+                </div>
+                <p th:text="${feature.description}">功能说明</p>
+                <small th:text="${feature.enabled ? '已解锁' : '未解锁'}">已解锁</small>
+            </article>
+        </section>
+
+        <section class="business-panel vip-usage-panel">
+            <div class="section-title"><h2>当前 VIP 用量</h2><span th:text="${vipUsage.message}">VIP 大容量模式已解锁</span></div>
+            <div class="vip-usage-grid">
+                <article>
+                    <div>
+                        <strong>歌曲额度</strong>
+                        <span th:text="${vipUsage.songCount + ' / ' + vipUsage.songLimitLabel}">0 / 20</span>
+                    </div>
+                    <div class="usage-bar"><i th:style="${'width:' + vipUsage.songPercent + '%'}"></i></div>
+                    <small th:text="${vipUsage.unlimited ? 'VIP 不限制实际歌库规模' : '试用版达到上限后需要升级'}">试用版达到上限后需要升级</small>
+                </article>
+                <article>
+                    <div>
+                        <strong>歌单额度</strong>
+                        <span th:text="${vipUsage.playlistCount + ' / ' + vipUsage.playlistLimitLabel}">0 / 3</span>
+                    </div>
+                    <div class="usage-bar"><i th:style="${'width:' + vipUsage.playlistPercent + '%'}"></i></div>
+                    <small th:text="${vipUsage.unlimited ? '适合客户多歌单整理交付' : '试用版仅保留少量歌单体验'}">试用版仅保留少量歌单体验</small>
+                </article>
+            </div>
+        </section>
+
+        <section class="business-panel">
+            <div class="section-title"><h2>VIP 套餐建议</h2><span>用于报价和授权码发放</span></div>
+            <div class="vip-plan-grid">
+                <article th:each="plan : ${vipPlans}" th:classappend="${plan.highlighted} ? ' highlighted'">
+                    <strong th:text="${plan.name}">VIP 月卡</strong>
+                    <span th:text="${plan.price}">￥39</span>
+                    <p th:text="${plan.description}">套餐说明</p>
+                    <small th:text="${plan.durationDays == null ? '永久授权' : plan.durationDays + ' 天授权'}">30 天授权</small>
+                </article>
+            </div>
+        </section>
+
+        <section class="business-grid">
+            <article class="business-panel">
+                <div class="section-title"><h2>激活授权码</h2><span>续费 / 转正</span></div>
+                <div class="server-message success" th:if="${message}" th:text="${message}"></div>
+                <div class="server-message error" th:if="${error}" th:text="${error}"></div>
+                <form class="license-form" action="/license/activate" method="post">
+                    <label>
+                        授权码
+                        <input name="code" placeholder="例如 SK-ABCD-2345-EFGH" required>
+                    </label>
+                    <button type="submit">激活授权</button>
+                </form>
+            </article>
+
+            <article class="business-panel">
+                <div class="section-title"><h2>VIP 权益边界</h2><span>更适合拿去卖</span></div>
+                <ul class="check-list">
+                    <li>试用版：基础歌单、歌曲库、播放器可体验。</li>
+                    <li>VIP：解锁网易云 / QQ / B 站导入与本地媒体绑定。</li>
+                    <li>永久版：适合一次性部署客户，后续只收维护费。</li>
+                    <li>授权只控制软件功能，不包含任何歌曲或视频资源。</li>
+                </ul>
+            </article>
+        </section>
+    </main>
+</div>
+</body>
+</html>
+
+
+
+

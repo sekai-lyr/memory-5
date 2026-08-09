@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${song.title + ' - Sekai Song'}">Player</title>
+    <link rel="stylesheet" th:href="@{/css/app.css(v=20260601a)}" href="/css/app.css?v=20260601a">
+</head>
+<body>
+<div class="app-shell player-bg" th:style="${#strings.isEmpty(song.skinUrl) ? '' : 'background-image: linear-gradient(90deg, rgba(10,15,30,.86), rgba(10,15,30,.62)), url(' + song.skinUrl + ')'}">
+    <div th:replace="~{fragments :: sidebar('songs')}"></div>
+    <main class="content player-layout">
+        <aside class="queue-panel">
+            <div class="queue-title">
+                <h2 th:text="${playlist != null ? playlist.name : '播放队列'}">播放队列</h2>
+                <span th:text="${#lists.size(queue) + ' 首'}">0 首</span>
+            </div>
+            <input class="queue-search" type="search" placeholder="搜索队列" data-queue-search>
+            <div class="queue-list">
+                <a th:each="item : ${queue}"
+                   th:classappend="${item.id == song.id} ? 'active'"
+                   th:href="${playlistId == null ? '/player/' + item.id : '/player/' + item.id + '?playlistId=' + playlistId}">
+                    <strong th:text="${item.title}">Song</strong>
+                    <span th:text="${item.artist}">Artist</span>
+                </a>
+            </div>
+        </aside>
+
+        <section class="now-playing"
+                 th:classappend="${isBilibiliVideo} ? 'bilibili-video-mode'"
+                 th:data-song-id="${song.id}"
+                 th:data-song-title="${song.title}"
+                 th:data-song-artist="${song.artist}"
+                 th:data-start-autoplay="${startAutoplay}"
+                 th:data-song-url="${playlistId == null ? '/player/' + song.id : '/player/' + song.id + '?playlistId=' + playlistId}">
+            <img class="cover-large" th:unless="${isBilibiliVideo}" th:src="${#strings.isEmpty(song.coverUrl) ? '/images/login-music-room.png' : song.coverUrl}" alt="">
+            <div class="player-copy">
+                <p class="eyebrow" th:text="${song.animeTitle}">Anime</p>
+                <h1 th:text="${song.title}">Song</h1>
+                <p th:text="${song.artist + ' · ' + song.albumName}">Artist</p>
+                <p class="playing-from" th:if="${playlist != null}" th:text="${'正在播放歌单：' + playlist.name}">正在播放歌单</p>
+
+                <div class="playback-controls" aria-label="播放控制">
+                    <button type="button" data-player-action="previous" title="上一首">上一首</button>
+                    <button type="button" data-player-action="mode" title="切换播放模式">
+                        <span data-play-mode-label>顺序播放</span>
+                    </button>
+                    <button type="button" data-player-action="next" title="下一首">下一首</button>
+                </div>
+                <div class="netease-embed bilibili-embed"
+                     th:if="${isBilibiliVideo && !#strings.isEmpty(song.bilibiliEmbedParam)}"
+                     data-bilibili-video="true"
+                     th:data-bilibili-duration="${song.durationSeconds == null ? 270 : song.durationSeconds}">
+                    <video class="bilibili-player bilibili-native-player"
+                           data-bilibili-native-player
+                           controls
+                           playsinline
+                           preload="auto"
+                           th:autoplay="${startAutoplay}"
+                           th:src="${playableLocalVideo ? song.localVideoUrl : '/bilibili/direct/' + song.id + '?quality=80'}"
+                           th:data-bilibili-local-video="${playableLocalVideo}"
+                           th:data-bilibili-direct-src="@{/bilibili/direct/{id}(id=${song.id},quality=80)}"
+                           th:data-bilibili-fallback-src="@{/bilibili/stream/{id}(id=${song.id},quality=80)}"></video>
+                </div>
+
+                <audio th:if="${playableAudio}" controls th:src="${song.localAudioUrl}"></audio>
+                <div class="player-tools" th:unless="${isBilibiliVideo}">
+                    <label>
+                        睡眠定时
+                        <select data-sleep-timer>
+                            <option value="0">关闭</option>
+                            <option value="15">15 分钟</option>
+                            <option value="30">30 分钟</option>
+                            <option value="60">60 分钟</option>
+                            <option value="90">90 分钟</option>
+                        </select>
+                    </label>
+                    <span data-sleep-status>未开启</span>
+                    <label>
+                        播放速度
+                        <select data-playback-rate>
+                            <option value="0.75">0.75x</option>
+                            <option value="1">1.00x</option>
+                            <option value="1.25">1.25x</option>
+                            <option value="1.5">1.50x</option>
+                            <option value="2">2.00x</option>
+                        </select>
+                    </label>
+                    <label class="volume-tool">
+                        音量
+                        <input type="range" min="0" max="100" value="100" data-volume-control>
+                    </label>
+                </div>
+                <div class="loop-tools" th:unless="${isBilibiliVideo}">
+                    <button type="button" data-loop-action="set-a">设置 A 点</button>
+                    <button type="button" data-loop-action="set-b">设置 B 点</button>
+                    <button type="button" data-loop-action="clear">清除片段循环</button>
+                    <span data-loop-status>未设置 A-B 循环</span>
+                </div>
+                <div class="visualizer-panel" th:unless="${isBilibiliVideo}">
+                    <div class="visualizer-toolbar">
+                        <label>
+                            均衡器
+                            <select data-eq-preset>
+                                <option value="flat">标准</option>
+                                <option value="bass">低音增强</option>
+                                <option value="vocal">人声突出</option>
+                                <option value="bright">明亮</option>
+                                <option value="night">夜间柔和</option>
+                            </select>
+                        </label>
+                        <span data-eq-status>标准</span>
+                    </div>
+                    <canvas data-visualizer width="720" height="120" aria-label="音频频谱"></canvas>
+                </div>
+                <div class="netease-embed" th:if="${!playableAudio && !#strings.isEmpty(song.neteaseSongId)}">
+                    <iframe class="netease-player"
+                            th:src="@{'https://music.163.com/outchain/player?type=2&id=' + ${song.neteaseSongId} + '&auto=0&height=66'}"
+                            frameborder="0"
+                            allow="autoplay; encrypted-media"></iframe>
+                    <a class="open-cloud" th:href="@{'https://music.163.com/#/song?id=' + ${song.neteaseSongId}}" target="_blank" rel="noopener">网易云打开</a>
+                </div>
+                <div class="netease-embed qq-embed" th:if="${!playableAudio && #strings.isEmpty(song.neteaseSongId) && !#strings.isEmpty(song.qqSongMid)}">
+                    <iframe class="qq-player"
+                            th:src="@{'https://i.y.qq.com/v8/playsong.html?songmid=' + ${song.qqSongMid}}"
+                            frameborder="0"
+                            allow="autoplay; encrypted-media"></iframe>
+                    <a class="open-cloud" th:href="@{'https://y.qq.com/n/ryqq/songDetail/' + ${song.qqSongMid}}" target="_blank" rel="noopener">QQ 音乐打开</a>
+                </div>
+                <div class="fake-player" th:if="${!playableAudio && #strings.isEmpty(song.neteaseSongId) && #strings.isEmpty(song.qqSongMid) && #strings.isEmpty(song.bilibiliEmbedParam)}">
+                    这首歌还没有可播放音频。上传本地音频后会优先使用项目播放器。
+                </div>
+
+                <form class="audio-upload" th:unless="${isBilibiliVideo}" th:action="@{/songs/audio/{id}(id=${song.id})}" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="returnTo" th:value="${playlistId == null ? '/player/' + song.id : '/player/' + song.id + '?playlistId=' + playlistId}">
+                    <label for="audioFile">本地音频</label>
+                    <input id="audioFile" name="audioFile" type="file" accept=".mp3,.flac,.m4a,.wav,.ogg,.aac,audio/*" required>
+                    <button type="submit">上传并播放</button>
+                </form>
+                <form class="audio-upload metadata-resync-form"
+                      th:if="${playableAudio}"
+                      th:action="@{/songs/audio/{id}/metadata/resync(id=${song.id})}"
+                      method="post">
+                    <input type="hidden" name="returnTo" th:value="${playlistId == null ? '/player/' + song.id : '/player/' + song.id + '?playlistId=' + playlistId}">
+                    <label>歌词/时长</label>
+                    <button type="submit">重新读取本地音频</button>
+                </form>
+
+                <form class="audio-upload video-upload" th:if="${isBilibiliVideo}" th:action="@{/songs/video/{id}(id=${song.id})}" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="returnTo" th:value="${playlistId == null ? '/player/' + song.id : '/player/' + song.id + '?playlistId=' + playlistId}">
+                    <label for="videoFile">本地视频</label>
+                    <input id="videoFile" name="videoFile" type="file" accept=".mp4,.webm,.m4v,.mov,.mkv,video/*" required>
+                    <button type="submit" th:text="${playableLocalVideo ? '替换本地视频' : '上传本地视频'}">上传本地视频</button>
+                </form>
+
+                <form th:unless="${isBilibiliVideo}" th:action="@{/songs/favorite/{id}(id=${song.id})}" method="post">
+                    <input type="hidden" name="returnTo" th:value="${playlistId == null ? '/player/' + song.id : '/player/' + song.id + '?playlistId=' + playlistId}">
+                    <button class="pill-btn" type="submit" th:text="${song.favorite} ? '取消收藏' : '收藏这首'">收藏这首</button>
+                </form>
+            </div>
+        </section>
+
+        <section class="lyrics-panel" th:unless="${isBilibiliVideo}">
+            <div class="section-title"><h2>同步歌词</h2><span>LRC</span></div>
+            <div class="lyrics" id="lyrics">
+                <p th:each="line : ${lyricLines}" th:data-time="${line.seconds}">
+                    <b th:text="${line.text}">Lyric</b>
+                </p>
+                <p class="empty" th:if="${#lists.isEmpty(lyricLines)}">还没有歌词。歌曲库里支持粘贴 LRC 格式歌词。</p>
+            </div>
+        </section>
+        <section class="lyrics-panel bookmark-panel" th:unless="${isBilibiliVideo}">
+            <div class="section-title">
+                <h2>时间书签</h2>
+                <button class="text-action" type="button" data-add-bookmark>添加当前时间</button>
+            </div>
+            <div class="bookmark-list" data-bookmark-list>
+                <p class="empty">还没有时间书签</p>
+            </div>
+        </section>
+        <section class="lyrics-panel history-panel" th:unless="${isBilibiliVideo}">
+            <div class="section-title">
+                <h2>最近播放</h2>
+                <button class="text-action" type="button" data-clear-history>清空</button>
+            </div>
+            <div class="history-list" data-play-history>
+                <p class="empty">播放后会记录在这里</p>
+            </div>
+        </section>
+    </main>
+</div>
+<script th:src="@{/js/player.js(v=20260601a)}" src="/js/player.js?v=20260601a"></script>
+</body>
+</html>
+
+
+
+

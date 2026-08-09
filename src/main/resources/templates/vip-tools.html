@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sekai Song - VIP维护</title>
+    <link rel="stylesheet" th:href="@{/css/app.css(v=20260527i)}" href="/css/app.css?v=20260527i">
+</head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments :: sidebar('maintenance')}"></div>
+    <main class="content business-page maintenance-page">
+        <div class="section-title">
+            <h1>VIP 高级维护</h1>
+            <span>歌单体检 / 重复清理 / 本地文件检查</span>
+        </div>
+        <div class="server-message success" th:if="${message}" th:text="${message}"></div>
+        <div class="server-message error" th:if="${error}" th:text="${error}"></div>
+
+        <section class="business-panel maintenance-lock-panel"
+                 th:if="${licenseStatus == null or !licenseStatus.vip}">
+            <div>
+                <p class="eyebrow">VIP Tool</p>
+                <h2>高级维护需要 VIP 授权</h2>
+                <p>这个页面会扫描客户歌单，检查缺失的本地音频/视频、只依赖网易云或 QQ 链接的歌曲、重复歌曲，以及 B 站视频未本地化的问题。</p>
+            </div>
+            <a class="primary-link-button" href="/license">去激活 VIP</a>
+        </section>
+
+        <section class="maintenance-overview" th:if="${licenseStatus != null and licenseStatus.vip}">
+            <article>
+                <span>健康评分</span>
+                <strong th:text="${report.healthPercent + '%'}">100%</strong>
+                <div class="usage-bar"><i th:style="${'width:' + report.healthPercent + '%'}"></i></div>
+            </article>
+            <article>
+                <span>扫描规模</span>
+                <strong th:text="|${report.playlistCount} 个歌单|">0 个歌单</strong>
+                <small th:text="|${report.totalSongs} 首歌单内歌曲|">0 首歌曲</small>
+            </article>
+            <article>
+                <span>本地化媒体</span>
+                <strong th:text="|${report.localAudioCount} / ${report.localVideoCount}|">0 / 0</strong>
+                <small>音频 / 视频</small>
+            </article>
+            <article>
+                <span>需处理</span>
+                <strong th:text="${report.blockingIssueCount}">0</strong>
+                <small>缺文件或不可播放</small>
+            </article>
+            <article>
+                <span>可优化</span>
+                <strong th:text="${report.optimizationIssueCount}">0</strong>
+                <small>第三方链接 / 重复项</small>
+            </article>
+        </section>
+
+        <section class="business-panel maintenance-action-panel"
+                 th:if="${licenseStatus != null and licenseStatus.vip}">
+            <div class="section-title">
+                <h2>一键维护</h2>
+                <span th:text="|重复歌曲 ${report.duplicateSongCount} 条|">重复歌曲 0 条</span>
+            </div>
+            <div class="maintenance-action-row">
+                <p>重复清理只会把重复歌曲从歌单里移除，保留歌曲库和本地文件，适合客户部署后做日常整理。</p>
+                <form action="/vip-tools/deduplicate-all" method="post">
+                    <button type="submit" th:disabled="${report.duplicateSongCount == 0}">清理全部歌单重复项</button>
+                </form>
+            </div>
+        </section>
+
+        <section class="business-panel"
+                 th:if="${licenseStatus != null and licenseStatus.vip}">
+            <div class="section-title">
+                <h2>歌单体检结果</h2>
+                <span th:text="|${#lists.size(report.playlists)} 个歌单|">0 个歌单</span>
+            </div>
+            <div class="maintenance-table-wrap">
+                <table class="maintenance-table">
+                    <thead>
+                    <tr>
+                        <th>歌单</th>
+                        <th>歌曲</th>
+                        <th>本地音频</th>
+                        <th>B站视频</th>
+                        <th>第三方链接</th>
+                        <th>缺失/不可播</th>
+                        <th>重复</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="playlist : ${report.playlists}">
+                        <td>
+                            <a th:href="@{/playlists/{id}(id=${playlist.playlistId})}"
+                               th:text="${playlist.playlistName}">歌单</a>
+                            <small th:text="${playlist.statusText}">健康</small>
+                        </td>
+                        <td th:text="${playlist.songCount}">0</td>
+                        <td th:text="${playlist.localAudioCount}">0</td>
+                        <td th:text="|${playlist.localVideoCount} / ${playlist.bilibiliVideoCount}|">0 / 0</td>
+                        <td th:text="${playlist.thirdPartyOnlyCount}">0</td>
+                        <td th:text="${playlist.missingLocalAudioCount + playlist.missingLocalVideoCount + playlist.unplayableCount}">0</td>
+                        <td th:text="${playlist.duplicateSongCount}">0</td>
+                        <td>
+                            <form th:action="@{/vip-tools/playlists/{id}/deduplicate(id=${playlist.playlistId})}"
+                                  method="post">
+                                <button type="submit" th:disabled="${!playlist.hasDuplicates}">清重复</button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="business-panel"
+                 th:if="${licenseStatus != null and licenseStatus.vip}">
+            <div class="section-title">
+                <h2>问题清单</h2>
+                <span th:text="|显示前 ${#lists.size(report.issues)} 条|">显示前 0 条</span>
+            </div>
+            <div class="empty-maintenance" th:if="${#lists.isEmpty(report.issues)}">
+                当前没有发现明显问题，客户歌单状态很干净。
+            </div>
+            <div class="issue-list" th:if="${!#lists.isEmpty(report.issues)}">
+                <article th:each="issue : ${report.issues}" th:classappend="${issue.severity}">
+                    <div>
+                        <span th:text="${issue.type}">类型</span>
+                        <strong th:text="${issue.title}">歌曲</strong>
+                        <small th:text="${issue.playlistName}">歌单</small>
+                    </div>
+                    <p th:text="${issue.detail}">说明</p>
+                    <a th:href="@{/playlists/{id}(id=${issue.playlistId})}" th:text="${issue.actionHint}">处理</a>
+                </article>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

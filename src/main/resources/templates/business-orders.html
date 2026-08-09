@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sekai Song - 璁㈠崟鏀舵鍙拌处</title>
+    <link rel="stylesheet" th:href="@{/css/app.css(v=20260527e)}" href="/css/app.css?v=20260527e">
+</head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments :: sidebar('business')}"></div>
+    <main class="content business-page">
+        <div class="section-title">
+            <h1>璁㈠崟鏀舵鍙拌处</h1>
+            <a href="/business">杩斿洖鍟嗕笟鍖?/a>
+        </div>
+        <div class="server-message success" th:if="${message}" th:text="${message}"></div>
+        <div class="server-message error" th:if="${error}" th:text="${error}"></div>
+
+        <section class="order-summary-grid">
+            <article>
+                <span>宸叉敹娆?/span>
+                <strong th:text="${'楼' + summary.paidAmount}">楼0</strong>
+            </article>
+            <article>
+                <span>寰呮敹娆?/span>
+                <strong th:text="${'楼' + summary.unpaidAmount}">楼0</strong>
+            </article>
+            <article>
+                <span>鏈畬鎴愯鍗?/span>
+                <strong th:text="${summary.openOrderCount + ' 鍗?}">0 鍗?/strong>
+            </article>
+        </section>
+
+        <section class="business-panel">
+            <div class="section-title"><h2>鏂板璁㈠崟</h2><span>鍜ㄨ鎴愪氦鍚庤褰曞埌杩欓噷</span></div>
+            <form class="order-form" action="/business/orders/add" method="post">
+                <label>
+                    瀹㈡埛
+                    <input name="customerName" placeholder="瀹㈡埛鏄电О / 澶囨敞鍚?>
+                </label>
+                <label>
+                    鑱旂郴鏂瑰紡
+                    <input name="contact" placeholder="寰俊 / QQ / 闂查奔鍙?>
+                </label>
+                <label>
+                    鏈嶅姟濂楅
+                    <select name="servicePlan">
+                        <option value="鍩虹閮ㄧ讲">鍩虹閮ㄧ讲</option>
+                        <option value="杩涢樁鏁寸悊">杩涢樁鏁寸悊</option>
+                        <option value="涓婚瀹氬埗">涓婚瀹氬埗</option>
+                        <option value="闀挎湡缁存姢">闀挎湡缁存姢</option>
+                        <option value="鎺堟潈鐮侀攢鍞?>鎺堟潈鐮侀攢鍞?/option>
+                    </select>
+                </label>
+                <label>
+                    鎬婚噾棰?                    <input name="totalAmount" type="number" min="0" step="0.01" placeholder="199">
+                </label>
+                <label>
+                    宸叉敹閲戦
+                    <input name="paidAmount" type="number" min="0" step="0.01" placeholder="50">
+                </label>
+                <label>
+                    鏀舵鐘舵€?                    <select name="paymentStatus">
+                        <option value="UNPAID">鏈敹娆?/option>
+                        <option value="DEPOSIT">宸叉敹瀹氶噾</option>
+                        <option value="PAID">宸茬粨娓?/option>
+                        <option value="REFUNDED">宸查€€娆?/option>
+                    </select>
+                </label>
+                <label>
+                    浜や粯鐘舵€?                    <select name="status">
+                        <option value="QUOTED">宸叉姤浠?/option>
+                        <option value="IN_PROGRESS">浜や粯涓?/option>
+                        <option value="DELIVERED">宸蹭氦浠?/option>
+                        <option value="CLOSED">宸茬粨娓?/option>
+                        <option value="CANCELED">宸插彇娑?/option>
+                    </select>
+                </label>
+                <label>
+                    璁″垝浜や粯鏃?                    <input name="dueDate" type="date">
+                </label>
+                <label class="consult-wide">
+                    澶囨敞
+                    <textarea name="note" placeholder="閮ㄧ讲鐜銆佸鎴烽渶姹傘€佸凡鍙戞巿鏉冪爜銆佸敭鍚庣害瀹?></textarea>
+                </label>
+                <button type="submit">璁板綍璁㈠崟</button>
+            </form>
+        </section>
+
+        <section class="business-panel">
+            <div class="section-title"><h2>璁㈠崟鍒楄〃</h2><span th:text="${#lists.size(orders) + ' 鍗?}">0 鍗?/span></div>
+            <div class="order-list" th:if="${!#lists.isEmpty(orders)}">
+                <article class="order-card" th:each="order : ${orders}">
+                    <div class="order-main">
+                        <strong th:text="${order.customerName}">瀹㈡埛</strong>
+                        <span th:text="${order.contact}">鑱旂郴鏂瑰紡</span>
+                        <p th:text="${#strings.isEmpty(order.note) ? '鏆傛棤澶囨敞銆? : order.note}">澶囨敞</p>
+                    </div>
+                    <div class="order-money">
+                        <span th:text="${order.servicePlan}">鍩虹閮ㄧ讲</span>
+                        <strong th:text="${'楼' + order.paidAmount + ' / 楼' + order.totalAmount}">楼0 / 楼0</strong>
+                        <small th:text="${'寰呮敹 楼' + order.remainingAmount}">寰呮敹 楼0</small>
+                    </div>
+                    <form th:action="@{/business/orders/{id}/status(id=${order.id})}" method="post">
+                        <select name="status">
+                            <option value="QUOTED" th:selected="${order.status == 'QUOTED'}">宸叉姤浠?/option>
+                            <option value="IN_PROGRESS" th:selected="${order.status == 'IN_PROGRESS'}">浜や粯涓?/option>
+                            <option value="DELIVERED" th:selected="${order.status == 'DELIVERED'}">宸蹭氦浠?/option>
+                            <option value="CLOSED" th:selected="${order.status == 'CLOSED'}">宸茬粨娓?/option>
+                            <option value="CANCELED" th:selected="${order.status == 'CANCELED'}">宸插彇娑?/option>
+                        </select>
+                        <select name="paymentStatus">
+                            <option value="UNPAID" th:selected="${order.paymentStatus == 'UNPAID'}">鏈敹娆?/option>
+                            <option value="DEPOSIT" th:selected="${order.paymentStatus == 'DEPOSIT'}">宸叉敹瀹氶噾</option>
+                            <option value="PAID" th:selected="${order.paymentStatus == 'PAID'}">宸茬粨娓?/option>
+                            <option value="REFUNDED" th:selected="${order.paymentStatus == 'REFUNDED'}">宸查€€娆?/option>
+                        </select>
+                        <button type="submit">鏇存柊</button>
+                    </form>
+                    <div class="order-meta">
+                        <em th:text="${order.statusLabel}">宸叉姤浠?/em>
+                        <em th:text="${order.paymentStatusLabel}">鏈敹娆?/em>
+                        <small th:text="${order.dueDate == null ? '鏈缃氦浠樻棩' : '浜や粯 ' + order.dueDate}">鏈缃氦浠樻棩</small>
+                        <small th:text="${#temporals.format(order.createTime, 'yyyy-MM-dd HH:mm')}">2026-05-26 18:00</small>
+                    </div>
+                </article>
+            </div>
+            <p class="empty" th:if="${#lists.isEmpty(orders)}">杩樻病鏈夎鍗曘€傚鎴蜂粠 /service 鐣欒祫鍚庯紝鎴愪氦鐨勫崟瀛愬氨璁板綍鍒拌繖閲屻€?/p>
+        </section>
+    </main>
+</div>
+</body>
+</html>
+
+
+
+

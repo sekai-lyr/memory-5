@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sekai Song - 主页</title>
+    <link rel="stylesheet" th:href="@{/css/app.css(v=20260527e)}" href="/css/app.css?v=20260527e">
+</head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments :: sidebar('home')}"></div>
+    <main class="content">
+        <section class="hero-panel">
+            <div>
+                <p class="eyebrow">Tonight Queue</p>
+                <h1>晚上好，<span th:text="${loginUser.nickName}">Sekai</span></h1>
+                <p>从收藏歌单里挑一首，给今天配一个动漫片尾曲。</p>
+            </div>
+            <a class="hero-action" href="/songs">添加歌曲</a>
+        </section>
+        <a class="license-banner"
+           th:if="${licenseStatus != null}"
+           th:classappend="${licenseStatus.valid} ? ' valid' : ' expired'"
+           href="/license">
+            <strong th:text="${licenseStatus.label}">永久版</strong>
+            <span th:text="${licenseStatus.message}">永久授权已生效</span>
+        </a>
+        <section class="stats-grid">
+            <article><span th:text="${stats.songCount}">0</span><small>歌曲</small></article>
+            <article><span th:text="${stats.playlistCount}">0</span><small>歌单</small></article>
+            <article><span th:text="${stats.favoriteCount}">0</span><small>收藏</small></article>
+            <article><span th:text="${stats.topAnime}">暂无</span><small>常听作品</small></article>
+        </section>
+        <section class="two-column">
+            <div>
+                <div class="section-title"><h2>最近歌曲</h2><a href="/songs">全部</a></div>
+                <div class="song-list">
+                    <a class="song-row" th:each="song : ${recentSongs}" th:href="@{/player/{id}(id=${song.id})}">
+                        <img th:src="${#strings.isEmpty(song.coverUrl) ? '/images/login-music-room.png' : song.coverUrl}" alt="">
+                        <div><strong th:text="${song.title}">Song</strong><span th:text="${song.artist + ' · ' + song.animeTitle}">Artist</span></div>
+                        <em th:text="${song.mood}">治愈</em>
+                    </a>
+                    <p class="empty" th:if="${#lists.isEmpty(recentSongs)}">还没有歌曲，去歌曲库添加第一首吧。</p>
+                </div>
+            </div>
+            <div>
+                <div class="section-title"><h2>收藏循环</h2><a href="/favorites">查看</a></div>
+                <div class="compact-list">
+                    <a th:each="song : ${favoriteSongs}" th:href="@{/player/{id}(id=${song.id})}" th:text="${song.title}">Song</a>
+                    <p class="empty" th:if="${#lists.isEmpty(favoriteSongs)}">收藏会出现在这里。</p>
+                </div>
+                <div class="section-title"><h2>歌单</h2><a href="/playlists">管理</a></div>
+                <div class="compact-list">
+                    <a th:each="playlist : ${playlists}" th:href="@{/playlists/{id}(id=${playlist.id})}" th:text="${playlist.name}">Playlist</a>
+                    <p class="empty" th:if="${#lists.isEmpty(playlists)}">还没有歌单。</p>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>
+
+
+
+

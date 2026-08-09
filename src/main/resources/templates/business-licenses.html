@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sekai Song - 授权码管理</title>
+    <link rel="stylesheet" th:href="@{/css/app.css(v=20260527e)}" href="/css/app.css?v=20260527e">
+</head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments :: sidebar('business')}"></div>
+    <main class="content business-page">
+        <div class="section-title">
+            <h1>授权码管理</h1>
+            <a href="/license">打开授权中心</a>
+        </div>
+        <div class="server-message success" th:if="${message}" th:text="${message}"></div>
+        <div class="server-message error" th:if="${error}" th:text="${error}"></div>
+
+        <section class="business-panel">
+            <div class="section-title"><h2>快速生成 VIP 套餐</h2><span>适合直接发给客户</span></div>
+            <div class="vip-plan-grid">
+                <article th:each="plan : ${vipPlans}" th:classappend="${plan.highlighted} ? ' highlighted'">
+                    <strong th:text="${plan.name}">VIP 月卡</strong>
+                    <span th:text="${plan.price}">￥39</span>
+                    <p th:text="${plan.description}">套餐说明</p>
+                    <form action="/business/licenses/generate" method="post">
+                        <input type="hidden" name="plan" th:value="${plan.plan}">
+                        <input th:if="${plan.durationDays != null}" type="hidden" name="durationDays" th:value="${plan.durationDays}">
+                        <input type="hidden" name="count" value="1">
+                        <input type="hidden" name="maxActivations" value="1">
+                        <input type="hidden" name="note" th:value="${plan.name + ' ' + plan.price}">
+                        <button type="submit">生成 1 个</button>
+                    </form>
+                </article>
+            </div>
+        </section>
+
+        <section class="business-panel">
+            <div class="section-title"><h2>生成授权码</h2><span>发给客户激活</span></div>
+            <form class="license-admin-form" action="/business/licenses/generate" method="post">
+                <label>
+                    版本
+                    <select name="plan">
+                        <option value="PRO">专业版</option>
+                        <option value="LIFETIME">永久版</option>
+                        <option value="TRIAL">试用版</option>
+                    </select>
+                </label>
+                <label>
+                    有效天数
+                    <input name="durationDays" type="number" min="1" max="3650" value="365">
+                </label>
+                <label>
+                    生成数量
+                    <input name="count" type="number" min="1" max="50" value="1">
+                </label>
+                <label>
+                    可激活次数
+                    <input name="maxActivations" type="number" min="1" max="100" value="1">
+                </label>
+                <label class="consult-wide">
+                    备注
+                    <input name="note" placeholder="例如：闲鱼客户 2026-05-26">
+                </label>
+                <button type="submit">生成授权码</button>
+            </form>
+        </section>
+
+        <section class="business-panel" th:if="${generatedCodes != null}">
+            <div class="section-title"><h2>刚生成的授权码</h2><span>复制给客户</span></div>
+            <div class="generated-code-list">
+                <code th:each="code : ${generatedCodes}" th:text="${code.code}">SK-XXXX-XXXX-XXXX</code>
+            </div>
+        </section>
+
+        <section class="business-panel">
+            <div class="section-title"><h2>授权码列表</h2><span th:text="${#lists.size(codes) + ' 个'}">0 个</span></div>
+            <div class="license-code-table" th:if="${!#lists.isEmpty(codes)}">
+                <div class="license-code-row header">
+                    <span>授权码</span>
+                    <span>版本</span>
+                    <span>有效期</span>
+                    <span>使用</span>
+                    <span>备注</span>
+                    <span>创建时间</span>
+                </div>
+                <div class="license-code-row" th:each="code : ${codes}">
+                    <code th:text="${code.code}">SK-XXXX</code>
+                    <span th:text="${code.plan}">PRO</span>
+                    <span th:text="${code.durationDays == null ? '永久' : code.durationDays + ' 天'}">365 天</span>
+                    <span th:text="${code.usedCount + '/' + code.maxActivations}">0/1</span>
+                    <span th:text="${#strings.isEmpty(code.note) ? '-' : code.note}">备注</span>
+                    <span th:text="${#temporals.format(code.createTime, 'yyyy-MM-dd HH:mm')}">时间</span>
+                </div>
+            </div>
+            <p class="empty" th:if="${#lists.isEmpty(codes)}">还没有授权码，先生成一个试试。</p>
+        </section>
+    </main>
+</div>
+</body>
+</html>
+
+
+
+

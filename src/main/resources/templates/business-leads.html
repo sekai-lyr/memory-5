@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sekai Song - 商业线索</title>
+    <link rel="stylesheet" th:href="@{/css/app.css(v=20260527e)}" href="/css/app.css?v=20260527e">
+</head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments :: sidebar('business')}"></div>
+    <main class="content business-page">
+        <div class="section-title">
+            <h1>商业线索</h1>
+            <span th:text="${openLeadCount + ' 个待跟进'}">0 个待跟进</span>
+        </div>
+        <div class="server-message success" th:if="${message}" th:text="${message}"></div>
+        <div class="server-message error" th:if="${error}" th:text="${error}"></div>
+
+        <section class="business-panel">
+            <div class="section-title">
+                <h2>最近咨询</h2>
+                <a href="/service" target="_blank" rel="noopener">打开公开服务页</a>
+            </div>
+            <div class="lead-list" th:if="${!#lists.isEmpty(leads)}">
+                <article class="lead-card" th:each="lead : ${leads}">
+                    <div>
+                        <strong th:text="${lead.name}">客户</strong>
+                        <span th:text="${lead.contact}">微信</span>
+                    </div>
+                    <p>
+                        <em th:text="${lead.plan}">基础部署</em>
+                        <em th:text="${#strings.isEmpty(lead.budget) ? '预算未定' : lead.budget}">预算</em>
+                        <em th:text="${lead.status}">NEW</em>
+                    </p>
+                    <p class="lead-message" th:text="${#strings.isEmpty(lead.message) ? '没有补充说明。' : lead.message}">需求</p>
+                    <form th:action="@{/business/leads/{id}/status(id=${lead.id})}" method="post">
+                        <select name="status">
+                            <option value="NEW" th:selected="${lead.status == 'NEW'}">新线索</option>
+                            <option value="CONTACTED" th:selected="${lead.status == 'CONTACTED'}">已联系</option>
+                            <option value="WON" th:selected="${lead.status == 'WON'}">已成交</option>
+                            <option value="LOST" th:selected="${lead.status == 'LOST'}">已放弃</option>
+                        </select>
+                        <button type="submit">更新</button>
+                    </form>
+                    <small th:text="${#temporals.format(lead.createTime, 'yyyy-MM-dd HH:mm')}">2026-05-26 18:00</small>
+                </article>
+            </div>
+            <p class="empty" th:if="${#lists.isEmpty(leads)}">还没有客户咨询。先把 /service 页面发到闲鱼、小红书、B 站动态里试试。</p>
+        </section>
+    </main>
+</div>
+</body>
+</html>
+
+
+
+

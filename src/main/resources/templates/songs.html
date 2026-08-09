@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sekai Song - 歌曲库</title>
+    <link rel="stylesheet" th:href="@{/css/app.css(v=20260527e)}" href="/css/app.css?v=20260527e">
+</head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments :: sidebar('songs')}"></div>
+    <main class="content">
+        <div class="section-title"><h1>歌曲库</h1><span th:text="${totalCount + ' 首'}">0 首</span></div>
+        <form class="search-bar" action="/songs" method="get">
+            <input name="keyword" th:value="${keyword}" placeholder="搜索歌名、歌手、动漫、标签">
+            <button type="submit">搜索</button>
+        </form>
+        <div class="message success" th:if="${message}" th:text="${message}"></div>
+        <div class="message error" th:if="${error}" th:text="${error}"></div>
+        <section class="editor-panel">
+            <h2>添加动漫歌曲</h2>
+            <form class="grid-form" action="/songs/add" method="post">
+                <input name="title" placeholder="歌曲名 *" required>
+                <input name="artist" placeholder="歌手">
+                <input name="animeTitle" placeholder="所属动漫">
+                <input name="albumName" placeholder="专辑 / 歌单系列">
+                <input name="coverUrl" placeholder="封面 URL">
+                <input name="audioUrl" placeholder="音频 URL / 网易云单曲分享链接">
+                <input name="skinUrl" placeholder="播放器皮肤 URL">
+                <input name="tags" placeholder="标签：OP, ED, 燃">
+                <input name="mood" placeholder="心情：治愈 / 热血">
+                <textarea name="lyricText" placeholder="[00:12] 第一行歌词&#10;[00:18] 第二行歌词"></textarea>
+                <button type="submit">加入歌曲库</button>
+            </form>
+        </section>
+        <section class="card-grid">
+            <article class="song-card" th:each="song : ${songs}">
+                <a th:href="@{/player/{id}(id=${song.id})}">
+                    <img th:src="${#strings.isEmpty(song.coverUrl) ? '/images/login-music-room.png' : song.coverUrl}" alt="">
+                    <strong th:text="${song.title}">Song</strong>
+                    <span th:text="${song.artist + ' · ' + song.animeTitle}">Artist</span>
+                </a>
+                <div class="tag-line">
+                    <em th:text="${song.mood}">mood</em>
+                    <em th:text="${song.tags}">tags</em>
+                    <em th:if="${!#strings.isEmpty(song.neteaseSongId)}">网易云可播放</em>
+                </div>
+                <div class="row-actions">
+                    <form th:action="@{/songs/favorite/{id}(id=${song.id})}" method="post">
+                        <input type="hidden" name="returnTo" value="/songs">
+                        <button type="submit" th:text="${song.favorite} ? '取消收藏' : '收藏'">收藏</button>
+                    </form>
+                    <form th:action="@{/songs/delete/{id}(id=${song.id})}" method="post">
+                        <button type="submit">删除</button>
+                    </form>
+                </div>
+            </article>
+        </section>
+        <div class="pager">
+            <a th:if="${currentPage > 1}" th:href="@{/songs(page=${currentPage - 1}, keyword=${keyword})}">上一页</a>
+            <span th:text="${currentPage + ' / ' + totalPages}">1 / 1</span>
+            <a th:if="${currentPage < totalPages}" th:href="@{/songs(page=${currentPage + 1}, keyword=${keyword})}">下一页</a>
+        </div>
+    </main>
+</div>
+</body>
+</html>
+
+
+
+

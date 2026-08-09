@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sekai Song - 歌单</title>
+    <link rel="stylesheet" th:href="@{/css/app.css(v=20260527h)}" href="/css/app.css?v=20260527h">
+</head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments :: sidebar('playlists')}"></div>
+    <main class="content">
+        <div class="section-title"><h1>专属动漫歌单</h1><span th:text="${#lists.size(playlists) + ' 个'}">0 个</span></div>
+        <div class="server-message success" th:if="${message}" th:text="${message}"></div>
+        <div class="server-message error" th:if="${error}" th:text="${error}"></div>
+        <section class="editor-panel">
+            <h2>新建歌单</h2>
+            <form class="grid-form compact" action="/playlists/add" method="post">
+                <input name="name" placeholder="歌单名称 *" required>
+                <input name="coverUrl" placeholder="封面 URL">
+                <input name="description" placeholder="歌单描述">
+                <button type="submit">创建</button>
+            </form>
+        </section>
+        <details class="editor-panel bulk-audio-panel local-audio-import-panel">
+            <summary class="local-audio-summary">
+                <span>
+                    <strong>本地音频导入</strong>
+                    <small>文件夹上传 / 路径扫描</small>
+                </span>
+                <b th:text="${licenseStatus != null and licenseStatus.vip ? 'VIP 已解锁' : 'VIP 功能'}">VIP 功能</b>
+            </summary>
+            <div class="bulk-audio-actions" th:if="${licenseStatus != null and licenseStatus.vip}">
+                <form class="bulk-audio-card local-audio-upload-form"
+                      action="/playlists/local-audio-folder"
+                      method="post"
+                      enctype="multipart/form-data">
+                    <div class="bulk-audio-copy">
+                        <strong>选择本地音乐文件夹</strong>
+                        <span>直接把 FLAC / MP3 / M4A 做成歌单，不需要网易云、QQ 或 B 站链接。</span>
+                    </div>
+                    <select name="playlistId">
+                        <option value="">新建歌单</option>
+                        <option th:each="playlist : ${playlists}"
+                                th:value="${playlist.id}"
+                                th:text="${'加入：' + playlist.name}">加入已有歌单</option>
+                    </select>
+                    <input name="playlistName" placeholder="新歌单名称，例如 客户本地歌单">
+                    <input name="coverUrl" placeholder="封面 URL，可不填">
+                    <div class="local-audio-picker">
+                        <input id="localAudioFolderInput"
+                               class="visually-hidden-file"
+                               name="audioFiles"
+                               type="file"
+                               accept=".mp3,.flac,.m4a,.wav,.ogg,.aac,.lrc,audio/*,text/plain"
+                               multiple
+                               webkitdirectory
+                               directory>
+                        <input id="localAudioFilesInput"
+                               class="visually-hidden-file"
+                               name="audioFiles"
+                               type="file"
+                               accept=".mp3,.flac,.m4a,.wav,.ogg,.aac,.lrc,audio/*,text/plain"
+                               multiple>
+                        <label class="file-picker-button" for="localAudioFolderInput">选择整个文件夹</label>
+                        <label class="file-picker-button secondary" for="localAudioFilesInput">选择多个音频</label>
+                        <span class="file-picker-summary" data-file-summary>文件夹窗口可能不显示歌曲，选定后这里会显示数量</span>
+                    </div>
+                    <button type="submit">导入文件夹为歌单</button>
+                </form>
+                <form class="bulk-audio-card"
+                      action="/playlists/local-audio-folder-path"
+                      method="post">
+                    <div class="bulk-audio-copy">
+                        <strong>填写本机文件夹路径</strong>
+                        <span>客户电脑本地部署时推荐用这个，速度更快，也不受浏览器上传大小影响。</span>
+                    </div>
+                    <select name="playlistId">
+                        <option value="">新建歌单</option>
+                        <option th:each="playlist : ${playlists}"
+                                th:value="${playlist.id}"
+                                th:text="${'加入：' + playlist.name}">加入已有歌单</option>
+                    </select>
+                    <input name="playlistName" placeholder="新歌单名称，例如 本地 FLAC 收藏">
+                    <input name="coverUrl" placeholder="封面 URL，可不填">
+                    <input name="folderPath" placeholder="例如 D:\Music\Anime 或 E:\客户音乐">
+                    <button type="submit">扫描路径并导入</button>
+                </form>
+            </div>
+            <p th:if="${licenseStatus == null or !licenseStatus.vip}">
+                升级 VIP 后，可以不依赖网易云、QQ 音乐或 B 站链接，直接把客户本地音频文件夹导入成可播放歌单。
+            </p>
+            <small>建议文件名使用“歌手 - 歌名.flac”或“歌名.flac”。导入成功后，项目会复制音频到 uploads/audio，原来的临时文件夹可以删除。</small>
+        </details>
+        <section class="card-grid">
+            <article class="playlist-card" th:each="playlist : ${playlists}">
+                <a th:href="@{/playlists/{id}(id=${playlist.id})}">
+                    <img th:src="${#strings.isEmpty(playlist.coverUrl) ? '/images/login-music-room.png' : playlist.coverUrl}" alt="">
+                    <strong th:text="${playlist.name}">Playlist</strong>
+                    <span th:text="${playlist.songCount + ' 首歌曲'}">0 首歌曲</span>
+                    <p th:text="${playlist.description}">Description</p>
+                </a>
+                <div class="playlist-actions">
+                    <a class="playlist-edit-link" th:href="@{/playlists/{id}/edit(id=${playlist.id})}">编辑</a>
+                    <form th:action="@{/playlists/delete/{id}(id=${playlist.id})}" method="post">
+                        <button type="submit">删除</button>
+                    </form>
+                </div>
+            </article>
+        </section>
+    </main>
+</div>
+<script>
+    document.querySelectorAll('.local-audio-upload-form').forEach((form) => {
+        const audioExtensions = new Set(['mp3', 'flac', 'm4a', 'wav', 'ogg', 'aac']);
+        const lyricExtensions = new Set(['lrc']);
+        const inputs = Array.from(form.querySelectorAll('input[type="file"][name="audioFiles"]'));
+        const summary = form.querySelector('[data-file-summary]');
+
+        const countAudioFiles = () => {
+            let total = 0;
+            let audio = 0;
+            let lyric = 0;
+            inputs.forEach((input) => {
+                Array.from(input.files || []).forEach((file) => {
+                    total++;
+                    const extension = (file.name.split('.').pop() || '').toLowerCase();
+                    if (audioExtensions.has(extension) || (file.type && file.type.startsWith('audio/'))) {
+                        audio++;
+                    } else if (lyricExtensions.has(extension)) {
+                        lyric++;
+                    }
+                });
+            });
+            return {total, audio, lyric};
+        };
+
+        const updateSummary = () => {
+            const {total, audio, lyric} = countAudioFiles();
+            if (!summary) {
+                return;
+            }
+            if (total === 0) {
+                summary.textContent = '文件夹窗口可能不显示歌曲，选定后这里会显示数量';
+                summary.classList.remove('ready');
+                return;
+            }
+            const ignored = total - audio - lyric;
+            summary.textContent = ignored > 0
+                    ? `已选 ${audio} 个音频，匹配歌词 ${lyric} 个，忽略 ${ignored} 个其他文件`
+                    : `已选 ${audio} 个音频，匹配歌词 ${lyric} 个`;
+            summary.classList.toggle('ready', audio > 0);
+        };
+
+        inputs.forEach((input) => input.addEventListener('change', updateSummary));
+        form.addEventListener('submit', (event) => {
+            const {audio} = countAudioFiles();
+            if (audio === 0) {
+                event.preventDefault();
+                if (summary) {
+                    summary.textContent = '这个文件夹里没有可导入的 MP3 / FLAC / M4A / WAV / OGG / AAC';
+                    summary.classList.remove('ready');
+                }
+            }
+        });
+    });
+</script>
+</body>
+</html>
+
+
+
+

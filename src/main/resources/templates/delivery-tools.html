@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sekai Song - 客户交付体检</title>
+    <link rel="stylesheet" th:href="@{/css/app.css(v=20260528a)}" href="/css/app.css?v=20260528a">
+</head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments :: sidebar('delivery')}"></div>
+    <main class="content business-page delivery-page">
+        <div class="section-title">
+            <h1>客户交付体检</h1>
+            <span>VIP / 可播放率 / 本地化 / 部署清单</span>
+        </div>
+        <div class="server-message success" th:if="${message}" th:text="${message}"></div>
+        <div class="server-message error" th:if="${error}" th:text="${error}"></div>
+
+        <section class="business-panel maintenance-lock-panel"
+                 th:if="${licenseStatus == null or !licenseStatus.vip}">
+            <div>
+                <p class="eyebrow">Delivery Tool</p>
+                <h2>客户交付体检需要 VIP 授权</h2>
+                <p>这个页面会按客户交付标准检查：歌曲是否能在项目播放器播放、uploads 文件是否缺失、网易云/QQ/B站在线播放风险、歌单是否空置，以及部署时要复制哪些文件。</p>
+            </div>
+            <a class="primary-link-button" href="/license">去激活 VIP</a>
+        </section>
+
+        <section class="delivery-hero business-panel"
+                 th:if="${licenseStatus != null and licenseStatus.vip}">
+            <div class="delivery-score-card" th:classappend="${report.readinessScore >= 90 ? ' excellent' : (report.readinessScore >= 70 ? ' good' : (report.readinessScore >= 45 ? ' caution' : ' danger'))}">
+                <span>交付就绪评分</span>
+                <strong th:text="${report.readinessScore}">88</strong>
+                <small th:text="${report.readinessLabel}">基本可交付</small>
+                <div class="usage-bar"><i th:style="${'width:' + report.readinessScore + '%'}"></i></div>
+            </div>
+            <div class="delivery-copy">
+                <p class="eyebrow">CUSTOMER HANDOVER</p>
+                <h2 th:text="${report.readinessHint}">还有一些在线播放或未归档风险，建议先处理高优先级清单。</h2>
+                <p>适合你把项目装到别人电脑前做最后检查。评分不是为了好看，是为了避免客户付完钱后发现 VIP 歌曲放不了、B站视频卡、uploads 文件没复制过去。</p>
+                <div class="delivery-actions">
+                    <a class="primary-link-button" href="/delivery-tools/report.txt">导出交付报告</a>
+                    <a class="secondary-link-button" href="/vip-tools">去高级维护</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="maintenance-overview delivery-overview"
+                 th:if="${licenseStatus != null and licenseStatus.vip}">
+            <article>
+                <span>歌曲总数</span>
+                <strong th:text="${report.songCount}">0</strong>
+                <small th:text="|${report.playlistCount} 个歌单|">0 个歌单</small>
+            </article>
+            <article>
+                <span>本地就绪</span>
+                <strong th:text="${report.localReadyCount}">0</strong>
+                <small>能离线交付播放</small>
+            </article>
+            <article>
+                <span>第三方风险</span>
+                <strong th:text="${report.thirdPartyOnlyCount + report.bilibiliOnlineCount}">0</strong>
+                <small>网易云 / QQ / B站在线播放</small>
+            </article>
+            <article>
+                <span>缺失文件</span>
+                <strong th:text="${report.missingLocalCount}">0</strong>
+                <small>数据库有绑定但文件不存在</small>
+            </article>
+            <article>
+                <span>上传体积</span>
+                <strong th:text="${report.uploadSizeLabel}">0 B</strong>
+                <small th:text="|${report.uploadFileCount} 个文件|">0 个文件</small>
+            </article>
+        </section>
+
+        <section class="delivery-grid"
+                 th:if="${licenseStatus != null and licenseStatus.vip}">
+            <article class="business-panel">
+                <div class="section-title">
+                    <h2>来源与本地化</h2>
+                    <span th:text="|${report.localAudioCount} 音频 / ${report.localVideoCount} 视频|">0 音频 / 0 视频</span>
+                </div>
+                <div class="delivery-source-list">
+                    <div th:each="source : ${report.sourceSummaries}" th:classappend="${source.cssClass}">
+                        <div>
+                            <strong th:text="${source.name}">本地就绪</strong>
+                            <small th:text="${source.description}">说明</small>
+                        </div>
+                        <span th:text="|${source.count} 首|">0 首</span>
+                        <div class="usage-bar"><i th:style="${'width:' + source.percent + '%'}"></i></div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="business-panel delivery-path-panel">
+                <div class="section-title">
+                    <h2>部署文件位置</h2>
+                    <span>客户电脑要重点复制</span>
+                </div>
+                <label>
+                    项目 uploads
+                    <code th:text="${report.uploadRoot}">B:\Sekai\...\uploads</code>
+                </label>
+                <label>
+                    外部 uploads
+                    <code th:text="${report.externalUploadRoot}">D:\SekaiSongExternalUploads\...</code>
+                </label>
+                <p>如果你把项目发到别人电脑，数据库里的本地音频/视频路径通常指向这些目录；文件缺了，播放器就会显示能点但放不出来。</p>
+            </article>
+        </section>
+
+        <section class="business-panel"
+                 th:if="${licenseStatus != null and licenseStatus.vip}">
+            <div class="section-title">
+                <h2>交付检查清单</h2>
+                <span th:text="|${#lists.size(report.checklist)} 项|">0 项</span>
+            </div>
+            <ol class="delivery-checklist">
+                <li th:each="item : ${report.checklist}" th:text="${item}">检查项</li>
+            </ol>
+        </section>
+
+        <section class="business-panel"
+                 th:if="${licenseStatus != null and licenseStatus.vip}">
+            <div class="section-title">
+                <h2>高优先级风险</h2>
+                <span th:text="|显示前 ${#lists.size(report.risks)} 条|">显示前 0 条</span>
+            </div>
+            <div class="empty-maintenance" th:if="${#lists.isEmpty(report.risks)}">
+                没有发现明显交付风险，可以导出报告后进行客户验收。
+            </div>
+            <div class="issue-list delivery-risk-list" th:if="${!#lists.isEmpty(report.risks)}">
+                <article th:each="risk : ${report.risks}" th:classappend="${risk.severity}">
+                    <div>
+                        <span th:text="${risk.type}">风险类型</span>
+                        <strong th:text="${risk.title}">歌曲</strong>
+                        <small th:text="${risk.severity == 'danger' ? '必须处理' : (risk.severity == 'warning' ? '建议处理' : '可优化')}">建议处理</small>
+                    </div>
+                    <p th:text="${risk.detail}">说明</p>
+                    <a th:if="${risk.songId != null}" th:href="@{/player/{id}(id=${risk.songId})}" th:text="${risk.actionHint}">处理</a>
+                    <a th:if="${risk.songId == null and risk.playlistId != null}" th:href="@{/playlists/{id}(id=${risk.playlistId})}" th:text="${risk.actionHint}">处理</a>
+                    <a th:if="${risk.songId == null and risk.playlistId == null}" href="/vip-tools" th:text="${risk.actionHint}">处理</a>
+                </article>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

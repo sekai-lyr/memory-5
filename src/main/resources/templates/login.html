@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sekai Song - 登录</title>
+    <link rel="stylesheet" th:href="@{/css/login.css(v=20260514)}" href="/css/login.css?v=20260514">
+</head>
+<body>
+<main class="login-page">
+    <section class="brand-area">
+        <p class="eyebrow">Anime Music Player</p>
+        <h1>Sekai Song</h1>
+        <p class="slogan">把 OP、ED、插曲和那些循环了一整晚的旋律，收进只属于你的二次元歌单。</p>
+        <div class="mini-stats">
+            <span>专属动漫歌单</span>
+            <span>同步歌词</span>
+            <span>背景皮肤</span>
+        </div>
+    </section>
+    <section class="form-area">
+        <div class="login-card">
+            <div class="card-header">
+                <span>?</span>
+                <h2>欢迎回来</h2>
+                <p>登录你的音乐宇宙</p>
+            </div>
+            <div class="server-message success" th:if="${message}" th:text="${message}"></div>
+            <div class="server-message error" th:if="${error}" th:text="${error}"></div>
+            <form id="loginForm" action="/user/login" method="post">
+                <label for="userName">用户名</label>
+                <div class="input-box">
+                    <span>ID</span>
+                    <input id="userName" name="userName" type="text" placeholder="请输入用户名" autocomplete="username" required>
+                </div>
+                <div class="error-text" id="userNameError"></div>
+                <label for="password">密码</label>
+                <div class="input-box">
+                    <span>PW</span>
+                    <input id="password" name="password" type="password" placeholder="请输入密码" autocomplete="current-password" required>
+                    <button type="button" id="togglePassword">显示</button>
+                </div>
+                <div class="error-text" id="passwordError"></div>
+                <button class="primary-btn" type="submit">登录</button>
+                <a class="secondary-btn" href="/register">创建账号</a>
+            </form>
+        </div>
+    </section>
+</main>
+<script th:src="@{/js/login.js}" src="/js/login.js"></script>
+</body>
+</html>
+
+
+
+
