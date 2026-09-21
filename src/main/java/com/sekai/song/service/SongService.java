@@ -20,6 +20,10 @@ public interface SongService {
 
     boolean updateLocalVideoUrl(Long id, Long userId, String localVideoUrl);
 
+    boolean updateCoverUrl(Long id, Long userId, String coverUrl);
+
+    boolean updateLyricMetadata(Long id, Long userId, String lyricText);
+
     Song getByIdAndUserId(Long id, Long userId);
 
     List<Song> listByUserId(Long userId, String keyword, int page, int pageSize);

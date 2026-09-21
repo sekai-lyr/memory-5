@@ -23,6 +23,7 @@ const addBookmarkButton = document.querySelector("[data-add-bookmark]");
 const bookmarkList = document.querySelector("[data-bookmark-list]");
 const bilibiliEmbed = document.querySelector(".bilibili-embed");
 const bilibiliPlayer = document.querySelector(".bilibili-player");
+const bilibiliStatus = document.querySelector("[data-bilibili-status]");
 const bilibiliUsesLocalVideo = bilibiliNativePlayer?.dataset.bilibiliLocalVideo === "true";
 const shouldStartAutoplay = currentTrackPanel?.dataset.startAutoplay === "true"
     || new URLSearchParams(window.location.search).get("autoplay") === "1";
@@ -47,6 +48,7 @@ const volumeKey = "sekai.player.volume";
 const loopKeyPrefix = "sekai.player.loop";
 const eqPresetKey = "sekai.player.eqPreset";
 const bookmarkKeyPrefix = "sekai.player.bookmarks";
+const sessionKeepAliveIntervalMs = 15 * 60 * 1000;
 let navigatingToTrack = false;
 let audioGraph = null;
 let visualizerFrame = null;
@@ -57,10 +59,30 @@ let bilibiliAdvanceHandled = false;
 let bilibiliAdvanceWorker = null;
 let bilibiliAdvanceWorkerUrl = null;
 let bilibiliStallTimer = null;
+let bilibiliStartupTimer = null;
+let bilibiliRecoveryTimer = null;
+let bilibiliFailureTimer = null;
 let bilibiliRecoveryStep = 0;
 let bilibiliRecovering = false;
+let bilibiliFailed = false;
+let bilibiliCurrentMode = bilibiliUsesLocalVideo ? "local" : "proxy";
 let bilibiliLastMoveAt = Date.now();
 let bilibiliLastTime = 0;
+const bilibiliStartupTimeoutMs = 7000;
+const bilibiliRecoveryTimeoutMs = 7000;
+
+function keepSessionAlive() {
+    fetch("/user/keep-alive", {
+        credentials: "same-origin",
+        cache: "no-store",
+        headers: { Accept: "application/json" }
+    }).catch(() => {
+        // A temporary network failure should not interrupt playback.
+    });
+}
+
+keepSessionAlive();
+setInterval(keepSessionAlive, sessionKeepAliveIntervalMs);
 
 function syncLyric(seconds) {
     let active = null;
@@ -75,7 +97,7 @@ function syncLyric(seconds) {
     }
     activeLyricRow = active;
     lyricRows.forEach((row) => row.classList.toggle("active", row === active));
-    if (active) {
+    if (active && !window.__sekaiStageEngine) {
         active.scrollIntoView({ block: "center", behavior: "smooth" });
     }
 }
@@ -228,26 +250,26 @@ function listenForBilibiliEndMessage() {
 }
 
 function setupBilibiliStreamFallback() {
-    if (!bilibiliNativePlayer || bilibiliUsesLocalVideo) {
+    if (!bilibiliNativePlayer) {
         return;
     }
-    bilibiliNativePlayer.addEventListener("error", () => recoverBilibiliPlayback());
+    bilibiliNativePlayer.addEventListener("error", () => recoverBilibiliPlayback("error"));
     bilibiliNativePlayer.addEventListener("waiting", scheduleBilibiliStallRecovery);
     bilibiliNativePlayer.addEventListener("stalled", scheduleBilibiliStallRecovery);
-    bilibiliNativePlayer.addEventListener("playing", clearBilibiliStallRecovery);
-    bilibiliNativePlayer.addEventListener("canplay", clearBilibiliStallRecovery);
+    bilibiliNativePlayer.addEventListener("loadstart", scheduleBilibiliStartupRecovery);
+    bilibiliNativePlayer.addEventListener("loadeddata", markBilibiliDataReady);
+    bilibiliNativePlayer.addEventListener("playing", markBilibiliPlaybackHealthy);
+    bilibiliNativePlayer.addEventListener("canplay", markBilibiliDataReady);
     bilibiliNativePlayer.addEventListener("progress", clearBilibiliStallRecovery);
     bilibiliNativePlayer.addEventListener("timeupdate", trackBilibiliProgress);
     setInterval(checkBilibiliFrozenPlayback, 1200);
+    scheduleBilibiliStartupRecovery();
 }
 
 function bilibiliRecoveryPlan() {
     return [
-        { mode: "proxy", quality: 80 },
-        { mode: "direct", quality: 80, refresh: true },
-        { mode: "direct", quality: 64, refresh: true },
+        { mode: "proxy", quality: 80, refresh: true },
         { mode: "proxy", quality: 64, refresh: true },
-        { mode: "direct", quality: 32, refresh: true },
         { mode: "proxy", quality: 32, refresh: true },
         { mode: "proxy", quality: 16, refresh: true }
     ];
@@ -268,15 +290,61 @@ function bilibiliSourceFor(step) {
     return url.toString();
 }
 
+function setBilibiliStatus(message, level = "info") {
+    if (!bilibiliStatus) {
+        return;
+    }
+    bilibiliStatus.textContent = message;
+    bilibiliStatus.dataset.level = level;
+    bilibiliStatus.hidden = !message;
+}
+
+function clearBilibiliStatus() {
+    setBilibiliStatus("");
+}
+
+function scheduleBilibiliStartupRecovery() {
+    if (!bilibiliNativePlayer || bilibiliFailed) {
+        return;
+    }
+    clearTimeout(bilibiliStartupTimer);
+    if (!bilibiliRecovering) {
+        setBilibiliStatus(bilibiliCurrentMode === "local" ? "正在读取本地视频…" : "正在加载视频…");
+    }
+    bilibiliStartupTimer = setTimeout(() => {
+        if (!bilibiliNativePlayer.ended
+            && bilibiliNativePlayer.readyState < HTMLMediaElement.HAVE_CURRENT_DATA) {
+            recoverBilibiliPlayback("startup-timeout");
+        }
+    }, bilibiliStartupTimeoutMs);
+}
+
+function markBilibiliDataReady() {
+    clearTimeout(bilibiliStartupTimer);
+    if (!bilibiliRecovering) {
+        clearBilibiliStatus();
+    }
+}
+
+function markBilibiliPlaybackHealthy() {
+    clearTimeout(bilibiliStartupTimer);
+    clearTimeout(bilibiliRecoveryTimer);
+    clearBilibiliStallRecovery();
+    bilibiliRecovering = false;
+    bilibiliFailed = false;
+    clearBilibiliStatus();
+}
+
 function scheduleBilibiliStallRecovery() {
-    if (!bilibiliNativePlayer || bilibiliRecovering || bilibiliNativePlayer.paused || bilibiliNativePlayer.ended) {
+    if (!bilibiliNativePlayer || bilibiliRecovering || bilibiliFailed
+        || bilibiliNativePlayer.paused || bilibiliNativePlayer.ended) {
         return;
     }
     clearTimeout(bilibiliStallTimer);
     bilibiliStallTimer = setTimeout(() => {
         if (!bilibiliNativePlayer.paused && !bilibiliNativePlayer.ended
             && bilibiliNativePlayer.readyState < HTMLMediaElement.HAVE_FUTURE_DATA) {
-            recoverBilibiliPlayback();
+            recoverBilibiliPlayback("stall");
         }
     }, 2600);
 }
@@ -290,68 +358,112 @@ function trackBilibiliProgress() {
     if (Math.abs(bilibiliNativePlayer.currentTime - bilibiliLastTime) > 0.2) {
         bilibiliLastTime = bilibiliNativePlayer.currentTime;
         bilibiliLastMoveAt = Date.now();
+        bilibiliRecoveryStep = 0;
+        markBilibiliPlaybackHealthy();
     }
 }
 
 function checkBilibiliFrozenPlayback() {
-    if (!bilibiliNativePlayer || bilibiliRecovering || bilibiliNativePlayer.paused || bilibiliNativePlayer.ended) {
+    if (!bilibiliNativePlayer || bilibiliRecovering || bilibiliFailed
+        || bilibiliNativePlayer.paused || bilibiliNativePlayer.ended) {
         return;
     }
     const frozenFor = Date.now() - bilibiliLastMoveAt;
     if (bilibiliNativePlayer.currentTime > 1
         && frozenFor > 4500
         && bilibiliNativePlayer.readyState < HTMLMediaElement.HAVE_FUTURE_DATA) {
-        recoverBilibiliPlayback();
+        recoverBilibiliPlayback("frozen");
     }
 }
 
-function recoverBilibiliPlayback() {
-    if (!bilibiliNativePlayer || bilibiliRecovering) {
+function recoverBilibiliPlayback(reason = "unknown") {
+    if (!bilibiliNativePlayer || bilibiliRecovering || bilibiliFailed) {
         return;
     }
     const plan = bilibiliRecoveryPlan();
-    const step = plan[Math.min(bilibiliRecoveryStep, plan.length - 1)];
-    const nextSrc = bilibiliSourceFor(step);
-    if (!nextSrc) {
+    if (bilibiliRecoveryStep >= plan.length) {
+        failBilibiliPlayback();
         return;
     }
+    const step = plan[bilibiliRecoveryStep];
+    const nextSrc = bilibiliSourceFor(step);
+    if (!nextSrc) {
+        failBilibiliPlayback();
+        return;
+    }
+    const switchingFromLocal = bilibiliCurrentMode === "local";
     bilibiliRecoveryStep += 1;
     bilibiliRecovering = true;
+    bilibiliCurrentMode = step.mode;
     clearBilibiliStallRecovery();
+    clearTimeout(bilibiliStartupTimer);
+    clearTimeout(bilibiliRecoveryTimer);
+    setBilibiliStatus(switchingFromLocal
+        ? "本地视频读取异常，正在切换备用线路…"
+        : `视频加载异常，正在恢复（${bilibiliRecoveryStep}/${plan.length}）…`);
 
     const resumeAt = Number.isFinite(bilibiliNativePlayer.currentTime)
         ? Math.max(0, bilibiliNativePlayer.currentTime - 0.4)
         : 0;
     const shouldPlay = !bilibiliNativePlayer.paused || autoPlayEnabled() || shouldStartAutoplay || bilibiliNativePlayer.autoplay;
-    let resumed = false;
-    const resume = () => {
-        if (resumed) {
-            return;
-        }
-        resumed = true;
+    let settled = false;
+    const restorePosition = () => {
         try {
             if (resumeAt > 0 && Number.isFinite(bilibiliNativePlayer.duration)) {
                 bilibiliNativePlayer.currentTime = Math.min(resumeAt, Math.max(0, bilibiliNativePlayer.duration - 0.8));
             }
         } catch (error) {
-            // Some CDNs do not allow seeking until enough metadata arrives.
+            // Some sources do not allow seeking until enough metadata arrives.
         }
+    };
+    const resume = () => {
+        if (settled) {
+            return;
+        }
+        settled = true;
+        clearTimeout(bilibiliRecoveryTimer);
+        restorePosition();
         if (shouldPlay) {
             bilibiliNativePlayer.play().catch(() => {});
         }
         bilibiliRecovering = false;
         bilibiliLastMoveAt = Date.now();
+        clearBilibiliStatus();
     };
 
-    bilibiliNativePlayer.addEventListener("loadedmetadata", resume, { once: true });
+    bilibiliNativePlayer.addEventListener("loadedmetadata", restorePosition, { once: true });
     bilibiliNativePlayer.addEventListener("canplay", resume, { once: true });
     bilibiliNativePlayer.src = nextSrc;
     bilibiliNativePlayer.load();
-    setTimeout(() => {
-        if (!resumed) {
-            resume();
+    bilibiliRecoveryTimer = setTimeout(() => {
+        if (!settled) {
+            settled = true;
+            bilibiliRecovering = false;
+            recoverBilibiliPlayback(`${reason}-retry`);
         }
-    }, 5000);
+    }, bilibiliRecoveryTimeoutMs);
+}
+
+function failBilibiliPlayback() {
+    if (!bilibiliNativePlayer || bilibiliFailed) {
+        return;
+    }
+    bilibiliFailed = true;
+    bilibiliRecovering = false;
+    clearTimeout(bilibiliStartupTimer);
+    clearTimeout(bilibiliRecoveryTimer);
+    clearBilibiliStallRecovery();
+    bilibiliNativePlayer.pause();
+    const canSkip = queueLinks.length > 1;
+    setBilibiliStatus(canSkip
+        ? "当前视频无法加载，3 秒后自动播放下一首"
+        : "当前视频无法加载，请更换视频文件", "error");
+    clearTimeout(bilibiliFailureTimer);
+    if (canSkip) {
+        bilibiliFailureTimer = setTimeout(() => {
+            openQueueItem(currentQueueIndex() + 1);
+        }, 3000);
+    }
 }
 
 function restartBilibiliVideo() {
@@ -673,6 +785,10 @@ function startVisualizer() {
     }
     const graph = setupAudioGraph();
     if (!graph) {
+        return;
+    }
+    // 舞台模式：频谱画布由 player-stage.js 的固定规律动画接管
+    if (window.__sekaiStageEngine) {
         return;
     }
     graph.context.resume().catch(() => {});

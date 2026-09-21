@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- 登录 / 注册共用；依据项目页面制作的静态预览。 -->
+<div class="login-product-showcase" th:fragment="showcase" data-product-showcase>
+    <header class="showcase-heading">
+        <a class="showcase-brand" href="/login"><span aria-hidden="true">S<span>↗</span></span> Sekai Song</a>
+        <span class="showcase-eyebrow">YOUR MUSIC. YOUR SEKAI.</span>
+    </header>
+    <div class="showcase-world" aria-hidden="true">
+        <div class="showcase-ring showcase-ring--one"></div><div class="showcase-ring showcase-ring--two"></div>
+        <i class="showcase-orb showcase-orb--one"></i><i class="showcase-orb showcase-orb--two"></i>
+        <span class="showcase-bolt showcase-bolt--one">ϟ</span><span class="showcase-bolt showcase-bolt--two">ϟ</span>
+        <span class="showcase-spark showcase-spark--one">+</span><span class="showcase-spark showcase-spark--two">✦</span>
+        <div class="showcase-perspective">
+            <div class="login-monitor" data-login-monitor>
+                <div class="monitor-display">
+                    <div class="monitor-screen" data-monitor-screen>
+                        <div class="panel-stack" data-panel-stack>
+                            <div class="showcase-panel" data-product-panel data-page="home" data-title="音乐主页">
+                                <article class="panel-surface preview-home">
+                                    <div class="preview-chrome"><span><i></i><i></i><i></i></span><b>SEKAI SONG</b><small>音乐主页 ↗</small></div>
+                                    <div class="preview-app">
+                                        <aside class="preview-sidebar"><b>S.</b><span class="is-selected">⌂ 主页</span><span>♫ 歌曲库</span><span>▤ 歌单</span><span>♡ 收藏</span><span>⌕ 搜索</span><small>YOUR SEKAI</small></aside>
+                                        <div class="preview-content">
+                                            <div class="preview-hero"><small>TONIGHT QUEUE</small><h3>晚上好，Sekai</h3><p>给今天配一个动漫片尾曲。</p><span class="preview-pill">＋ 添加歌曲</span></div>
+                                            <div class="preview-stats"><span><b>24</b>歌曲</span><span><b>08</b>歌单</span><span><b>12</b>收藏</span><span><b>治愈</b>常听作品</span></div>
+                                            <div class="preview-home-bottom">
+                                                <div><h4>最近歌曲 <em>全部 ↗</em></h4><div class="preview-song"><i class="preview-thumb"></i><span>今晚的旋律<small>Anime · Original Soundtrack</small></span><em>治愈</em></div><div class="preview-song"><i class="preview-thumb preview-thumb--pink"></i><span>收藏里的片尾曲<small>Sekai · Tonight Queue</small></span><em>循环</em></div></div>
+                                                <div class="preview-collections"><h4>收藏循环</h4><span>夜色与旋律 <b>♡</b></span><h4>我的歌单</h4><span>动漫原声集 <b>↗</b></span></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </article>
+                            </div>
+                            <div class="showcase-panel" data-product-panel data-page="songs" data-title="歌曲选择">
+                                <article class="panel-surface preview-selection">
+                                    <div class="preview-chrome"><span><i></i><i></i><i></i></span><b>SEKAI SONG</b><small>歌曲库 ↗</small></div>
+                                    <div class="preview-app">
+                                        <aside class="preview-sidebar"><b>S.</b><span>⌂ 主页</span><span class="is-selected">♫ 歌曲库</span><span>▤ 歌单</span><span>♡ 收藏</span><span>⌕ 搜索</span><small>YOUR SEKAI</small></aside>
+                                        <div class="preview-content">
+                                            <div class="preview-title"><div><small>SEKAI SONG</small><h3>选择一首歌</h3></div><span class="preview-search">⌕ 搜索歌名、歌手或动漫</span></div>
+                                            <div class="preview-selection-grid">
+                                                <div class="preview-feature"><small>NOW SELECTING</small><div class="preview-cover"></div><h4>今晚的旋律</h4><p>Anime · Original Soundtrack</p><span class="preview-pill">▶ 播放这首</span></div>
+                                                <div class="preview-track-list"><h4>歌曲选择 <em>01 / 04</em></h4><div class="preview-song is-selected"><b>01</b><i class="preview-thumb"></i><span>今晚的旋律<small>Anime · 治愈</small></span><em>♫</em></div><div class="preview-song"><b>02</b><i class="preview-thumb preview-thumb--pink"></i><span>收藏里的片尾曲<small>Sekai · 夜晚</small></span><em>♡</em></div><div class="preview-song"><b>03</b><i class="preview-thumb preview-thumb--gold"></i><span>放学后的音乐室<small>Original Soundtrack</small></span><em>♡</em></div><div class="preview-song"><b>04</b><i class="preview-thumb"></i><span>下一段故事<small>Anime · 日常</small></span><em>♡</em></div><div class="preview-mini-player"><span>▶</span><i></i><small>00:48</small></div></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </article>
+                            </div>
+                            <div class="showcase-panel" data-product-panel data-page="playlists" data-title="专属歌单">
+                                <article class="panel-surface preview-selection preview-playlists">
+                                    <div class="preview-chrome"><span><i></i><i></i><i></i></span><b>SEKAI SONG</b><small>专属歌单 ↗</small></div>
+                                    <div class="preview-app">
+                                        <aside class="preview-sidebar"><b>S.</b><span>⌂ 主页</span><span>♫ 歌曲库</span><span class="is-selected">▤ 歌单</span><span>♡ 收藏</span><span>⌕ 搜索</span><small>YOUR SEKAI</small></aside>
+                                        <div class="preview-content">
+                                            <div class="preview-title"><div><small>SEKAI PLAYLISTS</small><h3>专属动漫歌单</h3></div><span class="preview-search">浏览全部歌曲 ↗</span></div>
+                                            <div class="preview-selection-grid">
+                                                <div class="preview-feature"><small>PLAYLIST LIBRARY</small><div class="preview-cover preview-cover--playlist"><span>TONIGHT<br>QUEUE.</span></div><h4>夜色与旋律</h4><p>把喜欢的故事，收藏进同一个世界。</p><span class="preview-pill">↗ 进入歌单</span></div>
+                                                <div class="preview-track-list"><h4>歌单选择 <em>YOUR PLAYLISTS</em></h4><div class="preview-song is-selected"><b>01</b><i class="preview-thumb"></i><span>夜色与旋律<small>12 首歌曲 · 循环播放</small></span><em>↗</em></div><div class="preview-song"><b>02</b><i class="preview-thumb preview-thumb--pink"></i><span>动漫片尾曲<small>08 首歌曲</small></span><em>↗</em></div><div class="preview-song"><b>03</b><i class="preview-thumb preview-thumb--gold"></i><span>放学后的音乐室<small>16 首歌曲</small></span><em>↗</em></div><div class="preview-playlist-note">每一张歌单<br><b>都是一个小小的世界。</b></div></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </article>
+                            </div>
+                            <div class="showcase-panel" data-product-panel data-page="favorites" data-title="收藏循环">
+                                <article class="panel-surface preview-favorites">
+                                    <div class="preview-chrome"><span><i></i><i></i><i></i></span><b>SEKAI SONG</b><small>收藏歌曲 ↗</small></div>
+                                    <div class="preview-app">
+                                        <aside class="preview-sidebar"><b>S.</b><span>⌂ 主页</span><span>♫ 歌曲库</span><span>▤ 歌单</span><span class="is-selected">♡ 收藏</span><span>⌕ 搜索</span><small>YOUR SEKAI</small></aside>
+                                        <div class="preview-content">
+                                            <div class="preview-title"><div><small>KEEP THE SCENE ALIVE</small><h3>收藏歌曲</h3></div><span class="preview-search">♡ 你的心动歌单</span></div>
+                                            <div class="preview-card-grid"><div><i class="preview-cover"></i><b>今晚的旋律</b><small>Anime · 治愈</small><em>♥</em></div><div><i class="preview-cover preview-thumb--pink"></i><b>收藏里的片尾曲</b><small>Sekai · 夜晚</small><em>♥</em></div><div><i class="preview-cover preview-thumb--gold"></i><b>放学后的音乐室</b><small>Original Soundtrack</small><em>♥</em></div></div>
+                                            <div class="preview-favorite-note"><span>♡</span><div>喜欢的旋律，随时重逢。<small>把每一次心动留在 Sekai。</small></div><b>12 TRACKS</b></div>
+                                        </div>
+                                    </div>
+                                </article>
+                            </div>
+                            <div class="showcase-panel" data-product-panel data-page="player" data-title="沉浸播放">
+                                <article class="panel-surface preview-player">
+                                    <div class="preview-chrome"><span><i></i><i></i><i></i></span><b>SEKAI SONG</b><small>正在播放 ↗</small></div>
+                                    <div class="preview-player-body">
+                                        <div class="preview-player-heading"><small>NOW PLAYING</small><h3>今晚的旋律</h3><p>Anime · Original Soundtrack</p></div>
+                                        <div class="preview-album"><div class="preview-disc"><i></i></div><div class="preview-cover"></div></div>
+                                        <div class="preview-lyrics"><small>SYNCED LYRICS</small><span>让熟悉的旋律响起</span><strong>给今天配一个片尾曲</strong><span>把喜欢的故事收藏</span><span>下一首，还是心动</span></div>
+                                        <div class="preview-player-controls"><div><small>00:48</small><i></i><small>04:12</small></div><p><span>↻</span><span>⏮</span><b>Ⅱ</b><span>⏭</span><span>♡</span></p></div>
+                                    </div>
+                                </article>
+                            </div>
+                        </div>
+                        <div class="monitor-dock"><i>♫</i><i>▤</i><i>♡</i><i>▶</i><i>⌕</i></div>
+                    </div>
+                    <span class="monitor-camera"></span><span class="monitor-wordmark">SEKAI</span>
+                </div>
+                <div class="monitor-neck"></div><div class="monitor-base"></div>
+            </div>
+            <div class="monitor-shadow"></div>
+        </div>
+    </div>
+    <footer class="showcase-footer">
+        <div><span class="showcase-eyebrow">A LITTLE WORLD, ALL YOURS.</span><h2>让喜欢的旋律，<br>有一个自己的世界。</h2><p>收集歌曲 · 整理歌单 · 沉浸播放</p></div>
+        <div class="showcase-pagination"><span data-showcase-title>音乐主页</span><span class="showcase-page-count" data-showcase-index>01 / 05</span><button class="showcase-motion-toggle" type="button" data-showcase-toggle aria-label="暂停展示动画" aria-pressed="false"><span aria-hidden="true">Ⅱ</span></button></div>
+    </footer>
+</div>
+</body>
+</html>

@@ -41,11 +41,17 @@ public class BilibiliStreamControl {
     private static final Duration PLAY_URL_TTL = Duration.ofMinutes(20);
     private static final int DEFAULT_QUALITY = 80;
     private static final int STREAM_BUFFER_SIZE = 256 * 1024;
-    private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(8))
-            .version(HttpClient.Version.HTTP_2)
-            .followRedirects(HttpClient.Redirect.NORMAL)
-            .build();
+    private static final class HttpClientHolder {
+        private static final HttpClient INSTANCE = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(8))
+                .version(HttpClient.Version.HTTP_2)
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .build();
+    }
+
+    private static HttpClient httpClient() {
+        return HttpClientHolder.INSTANCE;
+    }
 
     @Resource
     private SongService songService;
@@ -100,7 +106,7 @@ public class BilibiliStreamControl {
         }
 
         try {
-            HttpResponse<InputStream> upstream = HTTP_CLIENT.send(
+            HttpResponse<InputStream> upstream = httpClient().send(
                     streamRequest(playUrl, servletRequest.getHeader(HttpHeaders.RANGE), song),
                     HttpResponse.BodyHandlers.ofInputStream());
             if (upstream.statusCode() != 200 && upstream.statusCode() != 206) {
@@ -158,7 +164,7 @@ public class BilibiliStreamControl {
         }
 
         try {
-            HttpResponse<String> response = HTTP_CLIENT.send(
+            HttpResponse<String> response = httpClient().send(
                     apiRequest(playUrlApi(song, quality)),
                     HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
@@ -228,7 +234,7 @@ public class BilibiliStreamControl {
     private long probeUrl(String url, Song song) {
         long startedAt = System.nanoTime();
         try {
-            HttpResponse<InputStream> response = HTTP_CLIENT.send(
+            HttpResponse<InputStream> response = httpClient().send(
                     streamRequest(url, "bytes=0-65535", song, Duration.ofSeconds(4)),
                     HttpResponse.BodyHandlers.ofInputStream());
             if (response.statusCode() != 200 && response.statusCode() != 206) {

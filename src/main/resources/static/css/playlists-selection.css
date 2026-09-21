@@ -1,0 +1,600 @@
+/* 歌单页沿用选歌页的视觉语法，只补充歌单管理与歌单总览的动作状态。 */
+
+.playlist-index-page .selection-toolbar-meta {
+    align-items: center;
+}
+
+.playlist-library-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    padding: 0 13px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 999px;
+    color: rgba(244, 242, 253, 0.68);
+    background: rgba(255, 255, 255, 0.05);
+    font-size: 11px;
+    font-weight: 800;
+    transition: color 220ms ease, background 220ms ease, border-color 220ms ease, transform 220ms ease;
+}
+
+.playlist-library-link:hover {
+    border-color: rgb(var(--selection-accent) / 0.46);
+    color: #1a151c;
+    background: rgb(var(--selection-accent));
+    transform: translateY(-1px);
+}
+
+.playlist-index-page .selection-feature-sub {
+    display: -webkit-box;
+    overflow: hidden;
+    white-space: normal;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+}
+
+.playlist-index-page .selection-feature-note {
+    max-width: 300px;
+}
+
+.playlist-secondary-action {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 14px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 999px;
+    color: rgba(243, 240, 251, 0.72);
+    background: rgba(255, 255, 255, 0.055);
+    font-size: 12px;
+    font-weight: 800;
+    transition: color 220ms ease, background 220ms ease, border-color 220ms ease, transform 220ms ease;
+}
+
+.playlist-secondary-action:hover {
+    border-color: rgb(var(--selection-accent) / 0.45);
+    color: rgb(var(--selection-accent));
+    background: rgb(var(--selection-accent) / 0.1);
+    transform: translateY(-1px);
+}
+
+.playlist-index-list {
+    padding-right: 2px;
+}
+
+.playlist-index-track {
+    grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.playlist-index-select {
+    grid-template-columns: 25px 58px minmax(0, 1fr) 22px;
+}
+
+.playlist-index-select img {
+    width: 58px;
+    height: 58px;
+    border-radius: 12px;
+}
+
+.playlist-index-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 10px 0 0;
+}
+
+.playlist-index-actions a,
+.playlist-index-actions button {
+    display: inline-grid;
+    place-items: center;
+    min-width: 28px;
+    min-height: 28px;
+    padding: 0 6px;
+    border: 0;
+    border-radius: 8px;
+    color: rgba(236, 233, 248, 0.46);
+    background: transparent;
+    font-size: 10px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: color 180ms ease, background 180ms ease, transform 180ms ease;
+}
+
+.playlist-index-actions a:hover,
+.playlist-index-actions button:hover {
+    color: rgb(var(--selection-accent));
+    background: rgb(var(--selection-accent) / 0.1);
+    transform: translateY(-1px);
+}
+
+.playlist-index-actions form {
+    margin: 0;
+}
+
+.playlist-index-actions form button:hover {
+    color: #efafbd;
+    background: rgba(239, 175, 189, 0.1);
+}
+
+.playlist-tools-panel {
+    padding-bottom: 2px;
+}
+
+.playlist-tools-panel[open] > summary {
+    margin-bottom: 6px;
+}
+
+.playlist-create-block,
+.playlist-import-block {
+    margin-top: 14px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.11);
+    border-radius: 16px;
+    background: rgba(9, 11, 23, 0.48);
+}
+
+.playlist-create-block h2,
+.playlist-tools-heading h2 {
+    margin: 0;
+    color: #f8f6ff;
+    font-size: 18px;
+    letter-spacing: -0.03em;
+}
+
+.playlist-create-block .selection-add-form {
+    max-width: none;
+    margin-top: 14px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+.playlist-tools-heading {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.playlist-tools-heading span,
+.playlist-import-block > small {
+    color: rgba(235, 233, 247, 0.42);
+    font-size: 11px;
+}
+
+.playlist-import-block .bulk-audio-actions {
+    margin-top: 16px;
+}
+
+.playlist-import-block .bulk-audio-card {
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.035);
+}
+
+.playlist-import-block > small {
+    display: block;
+    margin-top: 14px;
+    line-height: 1.7;
+}
+
+.playlist-index-page .selection-footer-row {
+    margin-bottom: 4px;
+}
+
+@media (max-width: 1100px) {
+    .playlist-index-actions {
+        gap: 1px;
+        padding-right: 5px;
+    }
+
+    .playlist-index-actions a,
+    .playlist-index-actions button {
+        min-width: 25px;
+        padding: 0 4px;
+    }
+}
+
+@media (max-width: 760px) {
+    .playlist-index-page .selection-toolbar-meta {
+        align-items: flex-start;
+    }
+
+    .playlist-index-select {
+        grid-template-columns: 23px 48px minmax(0, 1fr) 18px;
+        gap: 8px;
+    }
+
+    .playlist-index-select img {
+        width: 48px;
+        height: 48px;
+    }
+
+    .playlist-index-actions {
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .playlist-create-block,
+    .playlist-import-block {
+        padding: 15px;
+    }
+
+    .playlist-tools-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 4px;
+    }
+}
+
+/* 歌单总览是独立的封面横向选择页，不复用歌单详情的歌曲长列表。 */
+.playlist-index-page .selection-stage {
+    position: relative;
+    display: block;
+    min-height: 100dvh;
+    height: 100dvh;
+    overflow: hidden;
+}
+
+.playlist-index-page .selection-feature {
+    position: absolute;
+    z-index: 2;
+    inset: 0;
+    display: block;
+    min-height: 100dvh;
+    pointer-events: none;
+    border: 0;
+}
+
+.playlist-index-page .selection-feature::before {
+    background:
+        linear-gradient(90deg, rgba(5, 7, 16, 0.84), transparent 54%),
+        linear-gradient(180deg, transparent 48%, rgba(5, 7, 16, 0.76));
+}
+
+.playlist-index-page .selection-feature-copy {
+    position: absolute;
+    right: auto;
+    bottom: clamp(44px, 8vh, 96px);
+    left: clamp(28px, 7vw, 112px);
+    max-width: 320px;
+    padding: 0;
+    pointer-events: auto;
+}
+
+.playlist-index-page .selection-feature-art {
+    display: none;
+}
+
+.playlist-index-page .selection-feature h2 {
+    max-width: 320px;
+    font-size: clamp(42px, 4.4vw, 70px);
+}
+
+.playlist-index-page .selection-feature-sub {
+    max-width: 340px;
+}
+
+.playlist-index-page .selection-rail {
+    position: absolute;
+    z-index: 3;
+    inset: 0;
+    display: block;
+    min-height: 100dvh;
+    height: 100dvh;
+    padding: 0;
+    overflow: hidden;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+}
+
+.playlist-index-page .selection-rail-head {
+    position: absolute;
+    z-index: 4;
+    top: 92px;
+    right: 30px;
+    left: 30px;
+    align-items: flex-end;
+    pointer-events: none;
+}
+
+.playlist-index-page .selection-rail-head h2 {
+    font-size: 15px;
+}
+
+.playlist-index-page .playlist-index-list {
+    position: absolute;
+    inset: 84px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: clamp(16px, 2vw, 34px);
+    margin: 0;
+    padding: 60px calc(50% - clamp(130px, 12vw, 185px)) 160px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-padding: 0 35vw;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+}
+
+.playlist-index-page .playlist-index-list::-webkit-scrollbar {
+    display: none;
+}
+
+.playlist-index-page .playlist-index-track {
+    position: relative;
+    display: block;
+    flex: 0 0 clamp(260px, 24vw, 370px);
+    width: clamp(260px, 24vw, 370px);
+    min-height: 440px;
+    overflow: visible;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 22px;
+    background: rgba(24, 24, 36, 0.82);
+    box-shadow: 0 26px 60px rgba(0, 0, 0, 0.3);
+    scroll-snap-align: center;
+    opacity: 0.52;
+    transform: translateY(26px) scale(0.88);
+    transition: opacity 420ms ease, transform 520ms cubic-bezier(0.16, 1, 0.3, 1), border-color 420ms ease, box-shadow 420ms ease;
+}
+
+.playlist-index-page .playlist-index-track.is-active {
+    z-index: 2;
+    border-color: rgb(var(--selection-accent) / 0.5);
+    background: rgba(27, 27, 41, 0.94);
+    box-shadow: 0 34px 90px rgba(0, 0, 0, 0.46), 0 0 52px rgb(var(--selection-accent) / 0.14);
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.playlist-index-page .playlist-index-track:hover {
+    transform: translateY(-8px) scale(0.92);
+}
+
+.playlist-index-page .playlist-index-track.is-active:hover {
+    transform: translateY(-8px) scale(1.015);
+}
+
+.playlist-index-page .playlist-index-select {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1fr) auto;
+    width: 100%;
+    height: 100%;
+    min-height: 440px;
+    gap: 16px;
+    padding: 15px;
+    border-radius: 22px;
+}
+
+.playlist-index-page .playlist-index-select img {
+    grid-row: 1;
+    width: 100%;
+    height: 320px;
+    border-radius: 15px;
+    box-shadow: 0 18px 34px rgba(0, 0, 0, 0.34);
+}
+
+.playlist-index-page .playlist-index-select .selection-track-index {
+    position: absolute;
+    z-index: 2;
+    top: 27px;
+    left: 27px;
+    color: rgba(255, 255, 255, 0.82);
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.72);
+}
+
+.playlist-index-page .playlist-index-select .selection-track-copy {
+    grid-row: 2;
+    gap: 6px;
+    padding: 0 4px 2px;
+}
+
+.playlist-index-page .playlist-index-select .selection-track-copy strong {
+    overflow: hidden;
+    font-size: 17px;
+    text-overflow: ellipsis;
+}
+
+.playlist-index-page .playlist-index-select .selection-track-copy small {
+    font-size: 11px;
+}
+
+.playlist-index-page .playlist-index-select .selection-track-arrow {
+    position: absolute;
+    z-index: 2;
+    top: 24px;
+    right: 23px;
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 50%;
+    color: #fff;
+    background: rgba(9, 10, 18, 0.4);
+}
+
+.playlist-index-page .playlist-index-actions {
+    position: absolute;
+    right: 16px;
+    bottom: -46px;
+    left: 16px;
+    z-index: 5;
+    justify-content: center;
+    padding: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 240ms ease, transform 240ms ease;
+    transform: translateY(-5px);
+}
+
+.playlist-index-page .playlist-index-track.is-active .playlist-index-actions,
+.playlist-index-page .playlist-index-track:hover .playlist-index-actions {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.playlist-index-page .playlist-index-actions a,
+.playlist-index-page .playlist-index-actions button {
+    min-height: 30px;
+    padding: 0 10px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 999px;
+    color: rgba(245, 243, 255, 0.72);
+    background: rgba(8, 9, 17, 0.58);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.playlist-index-page .selection-stage::after {
+    content: "拖动或点击封面选择歌单";
+    position: absolute;
+    z-index: 4;
+    right: 30px;
+    bottom: 38px;
+    color: rgba(235, 233, 247, 0.42);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+}
+
+.playlist-index-page.is-selection-next .playlist-index-list {
+    animation: playlist-carousel-next 620ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.playlist-index-page.is-selection-prev .playlist-index-list {
+    animation: playlist-carousel-prev 620ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes playlist-carousel-next {
+    from { opacity: 0.55; transform: translate3d(56px, 0, 0); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes playlist-carousel-prev {
+    from { opacity: 0.55; transform: translate3d(-56px, 0, 0); }
+    to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@media (max-width: 900px) {
+    .playlist-index-page .selection-stage {
+        height: 780px;
+        min-height: 780px;
+    }
+
+    .playlist-index-page .selection-feature {
+        min-height: 780px;
+    }
+
+    .playlist-index-page .selection-feature-copy {
+        bottom: 44px;
+        left: 24px;
+    }
+
+    .playlist-index-page .selection-rail,
+    .playlist-index-page .playlist-index-list {
+        height: 780px;
+        min-height: 0;
+    }
+
+    .playlist-index-page .playlist-index-list {
+        inset: 52px 0 0;
+        justify-content: flex-start;
+        padding: 44px calc(50% - min(38vw, 165px)) 155px;
+        scroll-padding: 0 24px;
+    }
+
+    .playlist-index-page .playlist-index-track {
+        flex-basis: min(76vw, 330px);
+        width: min(76vw, 330px);
+        min-height: 400px;
+    }
+
+    .playlist-index-page .playlist-index-select {
+        min-height: 400px;
+    }
+
+    .playlist-index-page .playlist-index-select img {
+        height: 278px;
+    }
+
+    .playlist-index-page .selection-stage::after {
+        right: 24px;
+        bottom: 22px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .playlist-index-page .playlist-index-list {
+        animation: none;
+    }
+}
+
+/* 信息跟随每一张歌单卡片，避免被主视觉封面遮住。 */
+.playlist-index-page .selection-feature-copy {
+    display: none;
+}
+
+.playlist-index-page .playlist-index-track {
+    min-height: 474px;
+}
+
+.playlist-index-page .playlist-index-select {
+    display: flex;
+    flex-direction: column;
+    min-height: 474px;
+    gap: 14px;
+    padding: 16px;
+}
+
+.playlist-index-page .playlist-index-select .selection-track-copy {
+    order: 1;
+    display: grid;
+    min-height: 48px;
+    padding: 0 4px;
+}
+
+.playlist-index-page .playlist-index-select img {
+    order: 2;
+    width: 100%;
+    height: 320px;
+    flex: 1 1 auto;
+}
+
+.playlist-index-page .playlist-index-select .selection-track-copy strong {
+    font-size: 17px;
+}
+
+.playlist-index-page .playlist-index-select .selection-track-copy small {
+    color: rgba(235, 233, 247, 0.55);
+}
+
+.playlist-index-page .playlist-index-select .selection-track-index {
+    top: 22px;
+    left: 23px;
+}
+
+.playlist-index-page .playlist-index-select .selection-track-arrow {
+    top: 18px;
+    right: 18px;
+}
+
+.playlist-index-page .playlist-index-actions {
+    bottom: -42px;
+}
+
+@media (max-width: 900px) {
+    .playlist-index-page .playlist-index-track,
+    .playlist-index-page .playlist-index-select {
+        min-height: 438px;
+    }
+
+    .playlist-index-page .playlist-index-select img {
+        height: 278px;
+    }
+}

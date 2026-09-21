@@ -8,9 +8,6 @@ public class User {
     private String password;
     private String nickName;
     private String avatarUrl;
-    private String licensePlan;
-    private LocalDateTime licenseExpireTime;
-    private String licenseCode;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
 
@@ -52,30 +49,6 @@ public class User {
 
     public void setAvatarUrl(String avatarUrl) {
         this.avatarUrl = avatarUrl;
-    }
-
-    public String getLicensePlan() {
-        return licensePlan;
-    }
-
-    public void setLicensePlan(String licensePlan) {
-        this.licensePlan = licensePlan;
-    }
-
-    public LocalDateTime getLicenseExpireTime() {
-        return licenseExpireTime;
-    }
-
-    public void setLicenseExpireTime(LocalDateTime licenseExpireTime) {
-        this.licenseExpireTime = licenseExpireTime;
-    }
-
-    public String getLicenseCode() {
-        return licenseCode;
-    }
-
-    public void setLicenseCode(String licenseCode) {
-        this.licenseCode = licenseCode;
     }
 
     public LocalDateTime getCreateTime() {

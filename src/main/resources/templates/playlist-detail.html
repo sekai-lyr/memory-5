@@ -4,121 +4,283 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${playlist.name + ' - Sekai Song'}">Playlist</title>
-    <link rel="stylesheet" th:href="@{/css/app.css(v=20260527e)}" href="/css/app.css?v=20260527e">
+    <link rel="stylesheet" th:href="@{/css/app.css(v=20260830b)}" href="/css/app.css?v=20260830b">
+    <link rel="stylesheet" th:href="@{/css/songs-selection.css(v=20260906b)}" href="/css/songs-selection.css?v=20260906b">
+    <link rel="stylesheet" th:href="@{/css/playlists-selection.css(v=20260902c)}" href="/css/playlists-selection.css?v=20260902c">
 </head>
-<body>
-<div class="app-shell">
+<body class="song-selection-page playlist-detail-page selection-carousel-page">
+<div class="app-shell song-selection-shell">
     <div th:replace="~{fragments :: sidebar('playlists')}"></div>
-    <main class="content">
-        <section class="playlist-hero">
-            <img th:src="${#strings.isEmpty(playlist.coverUrl) ? '/images/login-music-room.png' : playlist.coverUrl}" alt="">
-            <div>
-                <h1 th:text="${playlist.name}">Playlist</h1>
-                <p th:text="${playlist.description}">Description</p>
-                <a class="pill-btn" th:if="${!#lists.isEmpty(playlistSongs)}" th:href="@{/playlists/{id}/play(id=${playlist.id})}">播放歌单</a>
-                <a class="pill-btn ghost" th:href="@{/playlists/{id}/edit(id=${playlist.id})}">编辑歌单</a>
-                <a class="pill-btn"
-                   th:if="${!#strings.isEmpty(playlist.neteasePlaylistId)}"
-                   th:href="@{'https://music.163.com/#/playlist?id=' + ${playlist.neteasePlaylistId}}"
-                   target="_blank">打开网易云原歌单</a>
-            </div>
-        </section>
 
-        <div class="server-message success" th:if="${message}" th:text="${message}"></div>
-        <div class="server-message error" th:if="${error}" th:text="${error}"></div>
-
-        <section class="editor-panel bulk-audio-panel">
-            <div class="section-title">
-                <h2>批量绑定本地音频</h2>
-                <span th:text="${licenseStatus != null and licenseStatus.vip ? 'VIP 已解锁' : 'VIP 功能'}">VIP 功能</span>
-            </div>
-            <div class="bulk-audio-actions" th:if="${licenseStatus != null and licenseStatus.vip}">
-                <form class="bulk-audio-card"
-                      th:action="@{/playlists/{id}/audio-folder(id=${playlist.id})}"
-                      method="post"
-                      enctype="multipart/form-data">
-                    <div class="bulk-audio-copy">
-                        <strong>选择音乐文件夹</strong>
-                        <span>浏览器上传，适合远程给客户配置。</span>
-                    </div>
-                    <input id="audioFolder"
-                           name="audioFiles"
-                           type="file"
-                           accept=".mp3,.flac,.m4a,.wav,.ogg,.aac,.lrc,audio/*,text/plain"
-                           multiple
-                           webkitdirectory
-                           directory>
-                    <button type="submit">自动匹配并绑定</button>
-                </form>
-                <form class="bulk-audio-card local-folder-path-form"
-                      th:action="@{/playlists/{id}/audio-folder-path(id=${playlist.id})}"
-                      method="post">
-                    <div class="bulk-audio-copy">
-                        <strong>填写本机路径</strong>
-                        <span>项目和音乐在同一台电脑时更快。</span>
-                    </div>
-                    <input id="audioFolderPath" name="folderPath" placeholder="例如 D:\Music\Netease">
-                    <button type="submit">扫描路径并绑定</button>
-                </form>
-                <form class="bulk-audio-card metadata-resync-form"
-                      th:action="@{/playlists/{id}/audio-metadata/resync(id=${playlist.id})}"
-                      method="post">
-                    <div class="bulk-audio-copy">
-                        <strong>重新读取已绑定文件</strong>
-                        <span>用于老数据补内嵌歌词、同目录 LRC 和真实时长。</span>
-                    </div>
-                    <button type="submit">同步歌词/时长</button>
-                </form>
-            </div>
-            <p th:if="${licenseStatus == null or !licenseStatus.vip}">
-                升级专业版或永久 VIP 后，可一次选择整个音乐文件夹，系统会按歌名和歌手自动匹配歌单歌曲并绑定本地 FLAC/MP3。
-            </p>
-            <small>文件名建议类似“歌手 - 歌名.flac”或直接“歌名.flac”。如果项目和音乐文件都在客户同一台电脑上，填写文件夹路径比浏览器上传更快，也不受几 GB 请求大小限制。</small>
-        </section>
-
-        <section class="editor-panel" th:if="${!#strings.isEmpty(playlist.neteasePlaylistId)}">
-            <div class="section-title"><h2>整单播放</h2><span>网易云外链</span></div>
-            <iframe class="netease-playlist-player"
-                    th:src="@{'https://music.163.com/outchain/player?type=0&id=' + ${playlist.neteasePlaylistId} + '&auto=0&height=430'}"
-                    frameborder="0"
-                    allow="autoplay; encrypted-media"></iframe>
-        </section>
-
-        <form class="search-bar" th:action="@{/playlists/{id}/songs/add(id=${playlist.id})}" method="post">
-            <select name="songId">
-                <option th:each="song : ${songs}" th:value="${song.id}" th:text="${song.title + ' - ' + song.artist}">Song</option>
-            </select>
-            <button type="submit">加入歌单</button>
-        </form>
-
-        <div class="song-list">
-            <div class="song-row" th:each="song : ${playlistSongs}">
-                <a th:href="@{/player/{id}(id=${song.id}, playlistId=${playlist.id}, autoplay=1)}">
-                    <strong th:text="${song.title}">Song</strong>
-                    <span th:text="${song.artist + ' · ' + song.animeTitle}">Artist</span>
-                    <em th:if="${!#strings.isEmpty(song.neteaseSongId)}">网易云可播放</em>
-                </a>
-                <form class="playlist-upload-form"
-                      th:if="${!#strings.isEmpty(song.bilibiliEmbedParam)}"
-                      th:action="@{/songs/video/{id}(id=${song.id})}"
-                      method="post"
-                      enctype="multipart/form-data">
-                    <input type="hidden" name="returnTo" th:value="${'/playlists/' + playlist.id}">
-                    <label th:for="${'playlistVideoFile-' + song.id}" th:text="${#strings.isEmpty(song.localVideoUrl) ? '上传本地视频' : '替换本地视频'}">上传本地视频</label>
-                    <input th:id="${'playlistVideoFile-' + song.id}" name="videoFile" type="file" accept=".mp4,.webm,.m4v,.mov,.mkv,video/*" required>
-                    <button type="submit">绑定</button>
-                </form>
-                <form th:action="@{/playlists/{playlistId}/songs/remove/{songId}(playlistId=${playlist.id}, songId=${song.id})}" method="post">
-                    <button type="submit">移除</button>
-                </form>
-            </div>
-            <p class="empty" th:if="${#lists.isEmpty(playlistSongs)}">这个歌单还没有歌曲，先从上面的下拉框加入歌曲。</p>
+    <main class="content song-selection-content">
+        <div class="selection-background" aria-hidden="true">
+            <img data-selection-background
+                 th:src="${#strings.isEmpty(playlist.coverUrl) ? '/images/login-music-room.png' : playlist.coverUrl}"
+                 alt="">
+            <span class="selection-background-wash"></span>
+            <span class="selection-background-glow selection-background-glow-one"></span>
+            <span class="selection-background-glow selection-background-glow-two"></span>
         </div>
+
+        <header class="selection-toolbar">
+            <div>
+                <p class="selection-kicker">SEKAI PLAYLIST</p>
+                <h1 th:text="${playlist.name}">Playlist</h1>
+                <p class="selection-intro" th:text="${playlist.description}">从这张歌单开始播放。</p>
+            </div>
+            <div class="selection-toolbar-meta">
+                <span th:text="${playlistSongTotal + ' 首歌曲'}">0 首歌曲</span>
+                <a class="selection-toolbar-play" data-selection-play
+                   th:if="${!#lists.isEmpty(playlistSongs)}"
+                   th:href="@{/player/{id}(id=${playlistSongs[0].id}, playlistId=${playlist.id}, autoplay=1)}">
+                    <span class="selection-play-icon">▶</span>
+                    <span>播放当前</span>
+                </a>
+                <a class="playlist-library-link" href="/playlists">返回歌单</a>
+            </div>
+        </header>
+
+        <div class="message success selection-message" th:if="${message}" th:text="${message}"></div>
+        <div class="message error selection-message" th:if="${error}" th:text="${error}"></div>
+
+        <section class="selection-stage playlist-detail-stage">
+            <section class="selection-feature">
+                <div class="selection-feature-copy">
+                    <p class="selection-feature-label">NOW SELECTING</p>
+                    <p class="selection-feature-anime" data-selection-anime
+                       th:text="${#lists.isEmpty(playlistSongs) ? 'PLAYLIST' : playlistSongs[0].animeTitle}">PLAYLIST</p>
+                    <h2 data-selection-title
+                        th:text="${#lists.isEmpty(playlistSongs) ? playlist.name : playlistSongs[0].title}">Song</h2>
+                    <p class="selection-feature-sub" data-selection-sub
+                       th:text="${#lists.isEmpty(playlistSongs) ? playlist.description : playlistSongs[0].artist + ' · ' + playlistSongs[0].albumName}">Artist · Album</p>
+                    <p class="selection-feature-note">右侧选择歌曲，主视觉和播放氛围会跟随封面切换。</p>
+                    <div class="selection-feature-actions">
+                        <a class="selection-play-action"
+                           data-selection-play
+                           th:if="${!#lists.isEmpty(playlistSongs)}"
+                           th:href="@{/playlists/{id}/play(id=${playlist.id})}">
+                            <span class="selection-play-icon">▶</span>
+                            <span>播放歌单</span>
+                        </a>
+                        <a class="playlist-secondary-action"
+                           th:href="@{/playlists/{id}/edit(id=${playlist.id})}">编辑歌单</a>
+                    </div>
+                    <p class="selection-feature-hint">点击右侧曲目预览，播放时右侧会展开圆盘</p>
+                </div>
+
+                <div class="selection-feature-art">
+                    <span class="selection-art-shadow"></span>
+                    <div class="selection-cover-frame">
+                        <img data-selection-feature-cover
+                             th:if="${!#lists.isEmpty(playlistSongs)}"
+                             th:src="${#strings.isEmpty(playlistSongs[0].coverUrl) ? '/images/login-music-room.png' : playlistSongs[0].coverUrl}"
+                             alt="">
+                        <img data-selection-feature-cover
+                             th:if="${#lists.isEmpty(playlistSongs)}"
+                             th:src="${#strings.isEmpty(playlist.coverUrl) ? '/images/login-music-room.png' : playlist.coverUrl}"
+                             alt="">
+                    </div>
+                    <span class="selection-art-sheen"></span>
+                    <span class="selection-art-orbit selection-art-orbit-one"></span>
+                    <span class="selection-art-orbit selection-art-orbit-two"></span>
+                </div>
+            </section>
+
+            <aside class="selection-rail playlist-detail-rail">
+                <div class="selection-rail-head">
+                    <div>
+                        <p class="selection-feature-label">PLAYLIST TRACKS</p>
+                        <h2 th:text="${playlist.name}">歌单歌曲</h2>
+                    </div>
+                    <span th:text="${playlistSongTotal + ' 首'}">0 首</span>
+                </div>
+
+                <div class="selection-track-list" data-selection-track-list>
+                    <div class="selection-track playlist-detail-track"
+                         th:each="song, songStat : ${playlistSongs}"
+                         th:classappend="${songStat.first} ? ' is-active'">
+                        <a class="selection-track-select"
+                                th:href="@{/player/{id}(id=${song.id}, playlistId=${playlist.id}, autoplay=1)}"
+                                data-selection-track
+                                th:data-id="${song.id}"
+                                th:data-title="${song.title}"
+                                th:data-artist="${song.artist}"
+                                th:data-anime="${song.animeTitle}"
+                                th:data-album="${song.albumName}"
+                                th:data-cover="${!#strings.isEmpty(song.bilibiliEmbedParam) ? '/images/login-music-room.png' : (#strings.isEmpty(song.coverUrl) ? '/images/login-music-room.png' : song.coverUrl)}"
+                                th:data-local-audio="${song.localAudioUrl}"
+                                th:data-player-url="@{/player/{id}(id=${song.id}, playlistId=${playlist.id}, autoplay=1)}">
+                            <span class="selection-track-index"
+                                  th:text="${pageOffset + songStat.index + 1 < 10 ? '0' + (pageOffset + songStat.index + 1) : pageOffset + songStat.index + 1}">01</span>
+                            <img th:if="${#strings.isEmpty(song.bilibiliEmbedParam)}"
+                                 th:src="${#strings.isEmpty(song.coverUrl) ? '/images/login-music-room.png' : song.coverUrl}" alt="">
+                            <span class="selection-track-video-art" th:unless="${#strings.isEmpty(song.bilibiliEmbedParam)}">
+                                <span>▶ B站视频</span>
+                            </span>
+                            <span class="selection-track-copy">
+                                <strong th:text="${song.title}">Song</strong>
+                                <small th:text="${song.artist + ' · ' + song.animeTitle}">Artist · Anime</small>
+                            </span>
+                            <span class="selection-track-arrow">↗</span>
+                        </a>
+                        <div class="playlist-track-actions">
+                            <details class="playlist-track-admin" th:if="${!#strings.isEmpty(song.bilibiliEmbedParam)}">
+                                <summary>管理</summary>
+                                <form class="playlist-upload-form"
+                                      th:action="@{/songs/video/{id}(id=${song.id})}"
+                                      method="post"
+                                      enctype="multipart/form-data">
+                                    <input type="hidden" name="returnTo" th:value="${'/playlists/' + playlist.id}">
+                                    <label th:for="${'playlistVideoFile-' + song.id}"
+                                           th:text="${#strings.isEmpty(song.localVideoUrl) ? '上传本地视频' : '替换本地视频'}">上传本地视频</label>
+                                    <input th:id="${'playlistVideoFile-' + song.id}"
+                                           name="videoFile"
+                                           type="file"
+                                           accept=".mp4,.webm,.m4v,.mov,.mkv,video/*"
+                                           required>
+                                    <button type="submit">绑定</button>
+                                </form>
+                            </details>
+                            <form th:action="@{/playlists/{playlistId}/songs/remove/{songId}(playlistId=${playlist.id}, songId=${song.id})}"
+                                  method="post">
+                                <button type="submit" title="从歌单移除">移除</button>
+                            </form>
+                        </div>
+                    </div>
+                    <p class="selection-empty playlist-detail-empty" th:if="${#lists.isEmpty(playlistSongs)}">
+                        这个歌单还没有歌曲，先在下方加入歌曲。
+                    </p>
+                </div>
+
+                <div class="selection-player-panel" data-selection-player hidden>
+                    <div class="selection-player-head">
+                        <div>
+                            <p class="selection-feature-label">NOW PLAYING</p>
+                            <h2>正在播放</h2>
+                        </div>
+                        <button type="button" class="selection-player-back" data-selection-player-back>返回选歌</button>
+                    </div>
+                    <div class="selection-player-art">
+                        <div class="selection-player-disc" aria-hidden="true">
+                            <span class="selection-player-disc-lines"></span>
+                            <span class="selection-player-disc-hole"></span>
+                            <img data-selection-player-disc-cover src="/images/login-music-room.png" alt="">
+                        </div>
+                        <img class="selection-player-cover" data-selection-player-cover src="/images/login-music-room.png" alt="">
+                    </div>
+                    <div class="selection-player-copy">
+                        <strong data-selection-player-title>Song</strong>
+                        <span data-selection-player-sub>Artist</span>
+                    </div>
+                    <div class="selection-player-controls">
+                        <button type="button" data-selection-player-toggle aria-label="播放或暂停">▶</button>
+                        <a data-selection-player-open href="/player" title="打开完整播放器">打开完整播放器 ↗</a>
+                    </div>
+                    <p class="selection-player-status" data-selection-player-status>播放时圆盘与背景会跟随歌曲变化。</p>
+                </div>
+                <nav class="pager selection-pager selection-carousel-pagination" aria-label="歌单歌曲分页">
+                    <a th:if="${currentPage > 1}"
+                       th:href="@{/playlists/{id}(id=${playlist.id}, page=${currentPage - 1})}">上一页</a>
+                    <div class="selection-pager-numbers">
+                        <a th:each="pageNumber : ${#numbers.sequence(1, totalPages)}"
+                           th:href="@{/playlists/{id}(id=${playlist.id}, page=${pageNumber})}"
+                           th:classappend="${pageNumber == currentPage} ? ' is-current'"
+                           th:attr="aria-current=${pageNumber == currentPage ? 'page' : null}"
+                           th:text="${pageNumber}">1</a>
+                    </div>
+                    <a th:if="${currentPage < totalPages}"
+                       th:href="@{/playlists/{id}(id=${playlist.id}, page=${currentPage + 1})}">下一页</a>
+                </nav>
+            </aside>
+        </section>
+
+        <details class="selection-add-panel playlist-tools-panel">
+            <summary>歌单工具</summary>
+            <div class="playlist-detail-tools-grid">
+                <section class="playlist-tool-card">
+                    <div class="playlist-tools-heading">
+                        <h2>加入歌曲</h2>
+                        <span>从歌曲库选择</span>
+                    </div>
+                    <form class="search-bar playlist-add-song-form"
+                          th:action="@{/playlists/{id}/songs/add(id=${playlist.id})}"
+                          method="post">
+                        <select name="songId">
+                            <option th:each="song : ${songs}"
+                                    th:value="${song.id}"
+                                    th:text="${song.title + ' - ' + song.artist}">Song</option>
+                        </select>
+                        <button type="submit">加入歌单</button>
+                    </form>
+                </section>
+            </div>
+
+            <section class="bulk-audio-panel playlist-import-block">
+                <div class="playlist-tools-heading">
+                    <h2>批量绑定本地音频</h2>
+                    <span>文件夹上传 / 路径扫描 / 元数据同步</span>
+                </div>
+                <div class="bulk-audio-actions">
+                    <form class="bulk-audio-card"
+                          th:action="@{/playlists/{id}/audio-folder(id=${playlist.id})}"
+                          method="post"
+                          enctype="multipart/form-data">
+                        <div class="bulk-audio-copy">
+                            <strong>选择音乐文件夹</strong>
+                            <span>浏览器上传，适合远程给客户配置。</span>
+                        </div>
+                        <input id="audioFolder"
+                               name="audioFiles"
+                               type="file"
+                               accept=".mp3,.flac,.m4a,.wav,.ogg,.aac,.lrc,audio/*,text/plain"
+                               multiple
+                               webkitdirectory
+                               directory>
+                        <button type="submit">自动匹配并绑定</button>
+                    </form>
+                    <form class="bulk-audio-card local-folder-path-form"
+                          th:action="@{/playlists/{id}/audio-folder-path(id=${playlist.id})}"
+                          method="post">
+                        <div class="bulk-audio-copy">
+                            <strong>填写本机路径</strong>
+                            <span>项目和音乐在同一台电脑时更快。</span>
+                        </div>
+                        <input id="audioFolderPath" name="folderPath" placeholder="例如 D:\Music\Netease">
+                        <button type="submit">扫描路径并绑定</button>
+                    </form>
+                    <form class="bulk-audio-card metadata-resync-form"
+                          th:action="@{/playlists/{id}/audio-metadata/resync(id=${playlist.id})}"
+                          method="post">
+                        <div class="bulk-audio-copy">
+                            <strong>重新读取已绑定文件</strong>
+                            <span>用于补内嵌歌词、同目录 LRC 和真实时长。</span>
+                        </div>
+                        <button type="submit">同步歌词 / 时长</button>
+                    </form>
+                </div>
+                <small>文件名建议类似“歌手 - 歌名.flac”或直接“歌名.flac”。</small>
+            </section>
+
+            <section class="editor-panel playlist-netease-panel" th:if="${!#strings.isEmpty(playlist.neteasePlaylistId)}">
+                <div class="playlist-tools-heading">
+                    <h2>整单播放</h2>
+                    <span>网易云外链</span>
+                </div>
+                <iframe class="netease-playlist-player"
+                        th:src="@{'https://music.163.com/outchain/player?type=0&id=' + ${playlist.neteasePlaylistId} + '&auto=0&height=430'}"
+                        frameborder="0"
+                        allow="autoplay; encrypted-media"></iframe>
+            </section>
+        </details>
+
+        <div class="selection-footer-row">
+            <div class="selection-page-note">每页 30 首歌曲，左右滑动浏览；当前歌单共 <span th:text="${playlistSongTotal}">0</span> 首。</div>
+            <a class="playlist-library-link" href="/playlists">返回全部歌单</a>
+        </div>
+
+        <audio class="selection-audio" data-selection-audio preload="metadata"></audio>
     </main>
 </div>
+<script th:src="@{/js/songs-selection.js(v=20260903c)}" src="/js/songs-selection.js?v=20260903c"></script>
 </body>
 </html>
-
-
-
-

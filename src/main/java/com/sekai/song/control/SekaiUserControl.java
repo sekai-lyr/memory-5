@@ -5,7 +5,10 @@ import com.sekai.song.model.User;
 import com.sekai.song.service.UserService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -32,6 +35,14 @@ public class SekaiUserControl {
         }
         redirectAttributes.addFlashAttribute("message", "注册成功，请登录你的歌单宇宙");
         return "redirect:/login";
+    }
+
+    @GetMapping("/user/keep-alive")
+    public ResponseEntity<Void> keepAlive(HttpSession session) {
+        if (session.getAttribute("loginUser") instanceof User) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
     @PostMapping("/user/login")

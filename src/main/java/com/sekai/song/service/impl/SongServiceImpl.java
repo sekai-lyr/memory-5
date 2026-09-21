@@ -77,6 +77,22 @@ public class SongServiceImpl implements SongService {
     }
 
     @Override
+    public boolean updateCoverUrl(Long id, Long userId, String coverUrl) {
+        if (id == null || userId == null || isBlank(coverUrl)) {
+            return false;
+        }
+        return songMapper.updateCoverUrl(id, userId, coverUrl.trim()) > 0;
+    }
+
+    @Override
+    public boolean updateLyricMetadata(Long id, Long userId, String lyricText) {
+        if (id == null || userId == null || isBlank(lyricText)) {
+            return false;
+        }
+        return songMapper.updateLyricMetadata(id, userId, lyricText.trim(), null) > 0;
+    }
+
+    @Override
     public Song getByIdAndUserId(Long id, Long userId) {
         if (id == null || userId == null) {
             return null;

@@ -1,0 +1,1102 @@
+/* ==========================================================================
+   Sekai Song — 五层动画舞台（播放页）
+   在 app.css 之后加载。仅作用于带 .player-stage 的播放页。
+   L1 全屏封面背景 / L2 左侧方形封面 / L3 封面后方的圆形 CD（只露右半）
+   L4 右侧歌词 / L5 底部控件 + 固定规律频谱。
+   所有动画由 player-stage.js 的单一主时间线（applyStage(t)）驱动。
+   ========================================================================== */
+
+/* ---------- 播放页容器：舞台通栏 ---------- */
+.player-layout {
+    max-width: none;
+    padding: 0;
+}
+
+/* ---------- 舞台主体（五层容器） ---------- */
+.player-stage {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(620px, 58%) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-areas:
+        "art lyrics"
+        "controls controls";
+    height: min(860px, calc(100vh - 76px));
+    min-height: 640px;
+    overflow: hidden;
+    isolation: isolate;
+    border-radius: 24px;
+    color: #f4f9ff;
+    background: #0a1120;
+    box-shadow: 0 34px 90px rgba(5, 10, 24, 0.45);
+}
+
+/* ========== L1 全屏清晰背景：封面大图铺满整个视口 ========== */
+.stage-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.stage-bg-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: saturate(1.08) brightness(1.02);
+    transform: scale(1.06) translateY(var(--bg-drift, 0px));
+    will-change: transform;
+}
+
+/* 轻遮罩：只轻微压暗左右边缘与上下两端，封面主体保持清晰 */
+.stage-bg-veil {
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(90deg, rgba(4, 8, 18, 0.42) 0%, rgba(4, 8, 18, 0.1) 24%, rgba(4, 8, 18, 0.04) 50%, rgba(4, 8, 18, 0.12) 76%, rgba(4, 8, 18, 0.42) 100%),
+        linear-gradient(180deg, rgba(4, 8, 18, 0.32) 0%, rgba(4, 8, 18, 0) 16%, rgba(4, 8, 18, 0) 72%, rgba(4, 8, 18, 0.4) 100%);
+}
+
+/* 播放页侧边栏：半透明毛玻璃，让全屏背景透过来 */
+.sidebar {
+    background: linear-gradient(180deg, rgba(13, 24, 42, 0.78) 0%, rgba(15, 31, 48, 0.72) 58%, rgba(13, 26, 42, 0.78) 100%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 5;
+}
+
+/* 舞台：透明背景，让全屏背景透出 */
+.player-stage {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(620px, 58%) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-areas:
+        "art lyrics"
+        "controls controls";
+    height: min(860px, calc(100vh - 76px));
+    min-height: 640px;
+    overflow: hidden;
+    isolation: isolate;
+    border-radius: 24px;
+    z-index: 1;
+    color: #f4f9ff;
+    background: transparent;
+    box-shadow: 0 34px 90px rgba(5, 10, 24, 0.35);
+}
+
+/* ========== L2 + L3 左侧方形封面（静态）与后方大圆唱片（旋转） ========== */
+.stage-art {
+    grid-area: art;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    padding: clamp(36px, 5vh, 64px) clamp(64px, 6vw, 120px) 0;
+    min-height: 0;
+}
+
+/* 左侧方形封面：静态，不旋转 */
+.cover-large {
+    position: relative;
+    z-index: 4;
+    flex: 0 0 auto;
+    width: clamp(360px, 30vw, 580px);
+    max-width: none;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 16px;
+    box-shadow:
+        0 28px 64px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.3),
+        0 0 0 4px rgba(255, 255, 255, 0.045),
+        0 0 56px rgba(141, 243, 228, 0.12);
+}
+
+/* 主视觉：封面后方的大圆唱片（同图圆裁切，匀速旋转） */
+.stage-disc {
+    position: relative;
+    z-index: 2;
+    flex: 0 0 auto;
+    width: clamp(360px, 30vw, 580px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    margin-left: clamp(-290px, -15vw, -160px);
+    transform: rotate(var(--cd-angle, 0deg)) translateY(var(--cover-float, 0px));
+    will-change: transform;
+    box-shadow:
+        0 30px 68px rgba(0, 0, 0, 0.48),
+        0 0 0 1px rgba(255, 255, 255, 0.16),
+        0 0 84px rgba(255, 209, 102, 0.14);
+}
+
+/* 圆盘光晕（主时间线驱动呼吸，跟随圆盘） */
+.stage-disc-glow {
+    position: absolute;
+    z-index: 0;
+    inset: -26%;
+    border-radius: 50%;
+    background: radial-gradient(circle,
+        rgba(255, 209, 102, 0.2) 0%,
+        rgba(255, 139, 184, 0.1) 42%,
+        rgba(141, 243, 228, 0.06) 60%,
+        transparent 72%);
+    filter: blur(8px);
+    opacity: var(--glow-opacity, 0.7);
+    transform: scale(var(--glow-scale, 1));
+    will-change: transform, opacity;
+    pointer-events: none;
+}
+
+/* 唱片外环：只保留薄环，不覆盖中间的封面图（随碟旋转） */
+.stage-disc-ring {
+    position: absolute;
+    z-index: 2;
+    inset: 0.2%;
+    border-radius: 50%;
+    background:
+        repeating-conic-gradient(from 8deg,
+            rgba(255, 246, 211, 0.7) 0deg 0.7deg,
+            rgba(255, 255, 255, 0) 0.7deg 5deg),
+        conic-gradient(from 0deg,
+            rgba(255, 246, 211, 0.72),
+            rgba(66, 76, 88, 0.72) 18%,
+            rgba(27, 34, 45, 0.76) 38%,
+            rgba(255, 255, 255, 0.52) 58%,
+            rgba(40, 48, 61, 0.76) 78%,
+            rgba(255, 255, 255, 0.48) 96%,
+            rgba(255, 246, 211, 0.72) 100%);
+    -webkit-mask: radial-gradient(circle,
+        transparent 0 92%,
+        #000 92.5% 98.8%,
+        transparent 99.3%);
+    mask: radial-gradient(circle,
+        transparent 0 92%,
+        #000 92.5% 98.8%,
+        transparent 99.3%);
+    pointer-events: none;
+}
+
+/* 封面圆形（碟面主体）：中心实际挖空，让舞台背景透出来 */
+.stage-disc-cover {
+    position: absolute;
+    z-index: 1;
+    inset: 2.6%;
+    width: 94.8%;
+    height: 94.8%;
+    border-radius: 50%;
+    object-fit: cover;
+    -webkit-mask: radial-gradient(circle at 50% 50%,
+        transparent 0 8%,
+        #000 8.7% 100%);
+    mask: radial-gradient(circle at 50% 50%,
+        transparent 0 8%,
+        #000 8.7% 100%);
+}
+
+/* 中心：透明圆环与中心孔，不再用白色实心圆覆盖封面 */
+.stage-disc-hole {
+    position: absolute;
+    z-index: 3;
+    inset: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 50%,
+        transparent 0 8%,
+        rgba(255, 255, 255, 0.78) 8.5% 9.4%,
+        transparent 9.9% 22%,
+        rgba(255, 255, 255, 0.28) 22.5% 23.2%,
+        transparent 23.7% 29%,
+        rgba(255, 255, 255, 0.16) 29.5% 30.2%,
+        transparent 30.7% 100%);
+    mix-blend-mode: screen;
+    pointer-events: none;
+}
+
+/* 内壁与中心孔边缘：只画描边，环内仍然透出舞台背景 */
+.stage-disc-hole::before,
+.stage-disc-hole::after {
+    content: "";
+    position: absolute;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.stage-disc-hole::before {
+    inset: 20%;
+    box-shadow:
+        0 0 0 5px rgba(255, 255, 255, 0.045),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+}
+
+.stage-disc-hole::after {
+    inset: 42%;
+    border-width: 2px;
+    border-color: rgba(255, 255, 255, 0.7);
+    box-shadow:
+        0 0 0 5px rgba(255, 255, 255, 0.1),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.28);
+}
+
+/* 碟面扫过的反光（不随碟旋转），保持底图可见 */
+.stage-disc-shine {
+    position: absolute;
+    z-index: 4;
+    inset: -1.5%;
+    border-radius: 50%;
+    background: linear-gradient(115deg,
+        rgba(255, 255, 255, 0.2) 0%,
+        rgba(255, 255, 255, 0) 30%,
+        rgba(255, 255, 255, 0) 66%,
+        rgba(255, 255, 255, 0.08) 100%);
+    -webkit-mask: radial-gradient(circle,
+        #000 0 90%,
+        transparent 91%);
+    mask: radial-gradient(circle,
+        #000 0 90%,
+        transparent 91%);
+    pointer-events: none;
+}
+
+/* 环绕光效粒子（主时间线驱动位置与呼吸，跟随圆盘） */
+.stage-particles {
+    position: absolute;
+    z-index: 5;
+    inset: -34%;
+    pointer-events: none;
+}
+
+.stage-particles i {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff 0%, rgba(255, 209, 102, 0.95) 40%, transparent 72%);
+    box-shadow: 0 0 12px rgba(255, 209, 102, 0.9);
+    opacity: 0;
+    will-change: transform, opacity;
+}
+
+/* ========== L4 右侧歌词区域 ========== */
+.stage-lyrics {
+    grid-area: lyrics;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    padding: 26px 46px 4px;
+}
+
+.stage-head {
+    margin-bottom: 8px;
+    padding: 0 20px;
+}
+
+.stage-head .eyebrow {
+    margin-bottom: 6px;
+    color: #8df3e4;
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+
+.stage-head .eyebrow:empty {
+    display: none;
+}
+
+.stage-head h1 {
+    margin: 0;
+    font-size: 30px;
+    line-height: 1.25;
+    color: #ffffff;
+    text-shadow: 0 4px 22px rgba(0, 0, 0, 0.45);
+}
+
+.stage-head .stage-sub {
+    margin: 4px 0 0;
+    color: rgba(244, 249, 255, 0.6);
+    font-size: 14px;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.lyrics {
+    position: relative;
+    height: min(46vh, 480px);
+    padding: 180px 0;
+    overflow: hidden;
+    scroll-behavior: auto;
+    scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 14%, #000 86%, transparent 100%);
+    mask-image: linear-gradient(to bottom, transparent 0, #000 14%, #000 86%, transparent 100%);
+}
+
+.lyrics::-webkit-scrollbar {
+    display: none;
+}
+
+.lyrics p {
+    margin: 0;
+    padding: 13px 20px;
+    border-radius: 14px;
+    color: rgba(244, 249, 255, 0.52);
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1.55;
+    text-align: left;
+    cursor: pointer;
+    transform: scale(0.985);
+    transform-origin: left center;
+    transition: color 0.35s ease, transform 0.35s ease, text-shadow 0.35s ease;
+}
+
+.lyrics p b {
+    font-weight: 600;
+}
+
+.lyrics p.empty {
+    color: rgba(244, 249, 255, 0.45);
+    font-size: 17px;
+    padding: 22px;
+    transform: none;
+    cursor: default;
+}
+
+/* 当前播放句：金色 + 轻微放大 + 同步高亮（覆盖 app.css 的旧高亮样式） */
+.lyrics p.active {
+    color: #ffd166;
+    font-weight: 800;
+    background: transparent;
+    box-shadow: none;
+    transform: scale(1.06);
+    text-shadow:
+        0 0 28px rgba(255, 209, 102, 0.5),
+        0 2px 12px rgba(0, 0, 0, 0.45);
+}
+
+.lyrics p.active b {
+    font-size: 1.1em;
+    font-weight: 800;
+}
+
+/* ========== 频谱：固定规律跳动（主时间线驱动绘制） ========== */
+.stage-spectrum {
+    position: absolute;
+    z-index: 3;
+    left: clamp(64px, 6vw, 120px);
+    bottom: clamp(108px, 12vh, 150px);
+    width: clamp(360px, 34vw, 660px);
+    height: 96px;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+/* ========== L5 底部控件 ========== */
+.stage-controls {
+    grid-area: controls;
+    display: grid;
+    grid-template-columns: minmax(280px, 1fr) auto minmax(240px, 1fr) auto;
+    align-items: center;
+    gap: 22px;
+    padding: 20px 34px 26px;
+    background: linear-gradient(to top, rgba(4, 8, 18, 0.9) 0%, rgba(4, 8, 18, 0.4) 68%, rgba(4, 8, 18, 0) 100%);
+}
+
+.stage-progress {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.stage-time {
+    min-width: 40px;
+    color: rgba(244, 249, 255, 0.78);
+    font-size: 13px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+}
+
+.stage-time:last-child {
+    text-align: right;
+}
+
+.stage-seek {
+    flex: 1;
+    min-width: 0;
+    height: 6px;
+    appearance: none;
+    border-radius: 999px;
+    background: linear-gradient(to right, #ffd166 0%, #ffd166 var(--seek, 0%), rgba(255, 255, 255, 0.22) var(--seek, 0%));
+    cursor: pointer;
+    outline-offset: 4px;
+}
+
+.stage-seek::-webkit-slider-thumb {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border: 0;
+    border-radius: 50%;
+    background: #ffd166;
+    box-shadow: 0 0 14px rgba(255, 209, 102, 0.85);
+}
+
+.stage-seek::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border: 0;
+    border-radius: 50%;
+    background: #ffd166;
+    box-shadow: 0 0 14px rgba(255, 209, 102, 0.85);
+}
+
+.stage-buttons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.stage-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    height: 44px;
+    padding: 0 14px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 999px;
+    color: #f4f9ff;
+    background: rgba(255, 255, 255, 0.08);
+    font-size: 15px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.stage-btn:hover {
+    background: rgba(255, 255, 255, 0.16);
+}
+
+.stage-play {
+    width: 62px;
+    height: 62px;
+    min-width: 62px;
+    border: 0;
+    border-radius: 50%;
+    color: #142033;
+    font-size: 22px;
+    background: linear-gradient(135deg, #ffd166, #ffb347);
+    box-shadow: 0 12px 34px rgba(255, 179, 71, 0.45);
+}
+
+.stage-sliders {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 18px;
+}
+
+.stage-volume,
+.stage-rate {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: rgba(244, 249, 255, 0.8);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.stage-volume input {
+    width: 110px;
+    accent-color: #ffd166;
+}
+
+.stage-rate select {
+    border: 0;
+    border-radius: 999px;
+    padding: 7px 10px;
+    color: #102033;
+    background: #f4fbff;
+    font-weight: 800;
+}
+
+.stage-tools-toggle {
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 999px;
+    padding: 9px 14px;
+    color: rgba(244, 249, 255, 0.85);
+    background: rgba(255, 255, 255, 0.06);
+    font-weight: 800;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+/* 操作结果提示（上传封面 / 获取歌词等） */
+.stage-flash {
+    position: absolute;
+    z-index: 8;
+    top: 22px;
+    right: 26px;
+    display: grid;
+    gap: 8px;
+    max-width: min(480px, calc(100% - 52px));
+    pointer-events: none;
+}
+
+.stage-flash .server-message {
+    margin: 0;
+    padding: 10px 16px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 800;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+}
+
+/* 高级工具抽屉 */
+.stage-tools {
+    position: absolute;
+    z-index: 6;
+    right: 22px;
+    bottom: 118px;
+    display: grid;
+    gap: 10px;
+    width: min(440px, calc(100% - 44px));
+    padding: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 18px;
+    background: rgba(10, 17, 32, 0.94);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+}
+
+.stage-tools[hidden] {
+    display: none;
+}
+
+/* 隐藏原生音频控件，由舞台控件接管 */
+.stage-audio {
+    display: none;
+}
+
+/* ========== 右侧抽屉：播放队列 / 书签 / 最近播放 ========== */
+.stage-drawer {
+    position: fixed;
+    z-index: 50;
+    top: 0;
+    right: 0;
+    height: 100vh;
+    width: min(390px, 94vw);
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr) minmax(0, auto);
+    gap: 12px;
+    padding: 20px 18px;
+    overflow: hidden;
+    color: #eef6ff;
+    background: rgba(9, 15, 30, 0.95);
+    border-left: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: -30px 0 90px rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(16px);
+    transform: translateX(102%);
+    transition: transform 0.32s ease;
+    will-change: transform;
+}
+
+.stage-drawer.open {
+    transform: translateX(0);
+}
+
+.stage-drawer-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.stage-drawer-head h2 {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    font-size: 20px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.stage-drawer-head > span {
+    color: #8df3e4;
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.stage-drawer-close {
+    width: 32px;
+    height: 32px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 50%;
+    color: rgba(244, 249, 255, 0.85);
+    background: rgba(255, 255, 255, 0.08);
+    font-size: 13px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.stage-drawer .queue-search {
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 12px;
+    padding: 10px 12px;
+    color: #eef6ff;
+    background: rgba(255, 255, 255, 0.07);
+}
+
+.stage-drawer .queue-search::placeholder {
+    color: rgba(244, 249, 255, 0.45);
+}
+
+.stage-drawer .queue-list {
+    max-height: none;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    overflow: auto;
+    scrollbar-width: thin;
+}
+
+.stage-drawer .queue-list a {
+    min-height: 54px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: rgba(244, 249, 255, 0.88);
+}
+
+.stage-drawer .queue-list a:hover {
+    background: rgba(255, 255, 255, 0.11);
+}
+
+.stage-drawer .queue-list a span {
+    color: rgba(244, 249, 255, 0.5);
+}
+
+.stage-drawer .queue-list a.active {
+    color: #ffd166;
+    font-weight: 900;
+    background: linear-gradient(135deg, rgba(255, 209, 102, 0.22), rgba(255, 139, 184, 0.16));
+    border-color: rgba(255, 209, 102, 0.45);
+}
+
+.stage-drawer-body {
+    display: grid;
+    gap: 16px;
+    overflow: auto;
+    padding-top: 4px;
+    scrollbar-width: thin;
+}
+
+.stage-drawer-section .section-title {
+    margin: 0 0 10px;
+}
+
+.stage-drawer-section .section-title h3 {
+    margin: 0;
+    font-size: 15px;
+}
+
+.stage-drawer .text-action {
+    border: 0;
+    border-radius: 999px;
+    padding: 7px 12px;
+    color: #8df3e4;
+    font-weight: 900;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.stage-drawer .history-list,
+.stage-drawer .bookmark-list {
+    grid-template-columns: 1fr;
+}
+
+.stage-drawer .history-list a,
+.stage-drawer .bookmark-item button {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #eef6ff;
+}
+
+.stage-drawer .history-list a:hover,
+.stage-drawer .bookmark-item button:hover {
+    background: rgba(255, 255, 255, 0.11);
+}
+
+.stage-drawer .history-list span,
+.stage-drawer .bookmark-item span {
+    color: rgba(244, 249, 255, 0.55);
+}
+
+.stage-drawer .bookmark-item button:last-child {
+    color: #ffb3cc;
+    background: rgba(255, 139, 184, 0.16);
+    border: 1px solid rgba(255, 139, 184, 0.25);
+}
+
+.stage-drawer .empty {
+    margin: 0;
+    padding: 14px;
+    border-radius: 12px;
+    color: rgba(244, 249, 255, 0.45);
+    background: rgba(255, 255, 255, 0.04);
+    font-size: 13px;
+}
+
+/* 控件栏「队列」按钮徽标 */
+.stage-queue-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    margin-left: 5px;
+    padding: 0 6px;
+    border-radius: 999px;
+    color: #142033;
+    background: linear-gradient(135deg, #ffd166, #ffb347);
+    font-size: 11px;
+    font-weight: 900;
+}
+
+/* ========== 渲染模式（60fps 成片输出用）：铺满全屏、隐藏辅助 UI ========== */
+body.render-mode {
+    overflow: hidden;
+}
+
+body.render-mode .app-shell {
+    display: block;
+}
+
+body.render-mode .sidebar {
+    display: none;
+}
+
+body.render-mode .content {
+    width: 100%;
+    max-width: none;
+    padding: 0;
+}
+
+body.render-mode .player-stage {
+    height: 100vh;
+    min-height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+}
+
+body.render-mode .stage-drawer,
+body.render-mode .stage-tools,
+body.render-mode .stage-queue-toggle,
+body.render-mode .stage-tools-toggle {
+    display: none !important;
+}
+
+/* ========== 响应式 ========== */
+@media (max-width: 1180px) {
+    .player-stage {
+        grid-template-columns: minmax(520px, 56%) minmax(0, 1fr);
+        height: auto;
+        min-height: 720px;
+    }
+
+    .stage-disc {
+        width: min(30vw, 520px);
+        margin-left: clamp(-220px, -14vw, -132px);
+    }
+
+    .lyrics p {
+        font-size: 19px;
+    }
+}
+
+@media (max-width: 900px) {
+    .player-stage {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: auto auto auto auto;
+        grid-template-areas:
+            "art"
+            "lyrics"
+            "spectrum"
+            "controls";
+        min-height: 0;
+    }
+
+    .stage-art {
+        min-height: 320px;
+    }
+
+    .stage-art {
+        padding: 28px 16px 0;
+    }
+
+    .cover-large {
+        width: min(62vw, 360px);
+    }
+
+    .stage-disc {
+        width: min(38vh, 360px);
+        margin-left: -42px;
+    }
+
+    .stage-spectrum {
+        position: relative;
+        left: auto;
+        bottom: auto;
+        justify-self: center;
+        width: calc(100% - 32px);
+        height: 96px;
+        margin: -18px 16px 0;
+    }
+
+    .stage-lyrics {
+        padding: 10px 20px 4px;
+    }
+
+    .lyrics {
+        height: 300px;
+    }
+
+    .stage-controls {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        padding: 18px 20px 22px;
+    }
+
+    .stage-sliders {
+        justify-content: flex-start;
+    }
+}
+
+/* 播放舞台最终构图：标题左上，封面与唱片重叠，歌词独立在右侧。 */
+.player-bg::before {
+    animation: none;
+}
+
+.player-bg .player-layout {
+    min-height: 100dvh;
+    height: 100dvh;
+    width: 100%;
+    max-width: none;
+    padding: 0;
+    gap: 0;
+}
+
+.player-bg .player-stage {
+    height: 100dvh;
+    min-height: 100dvh;
+    max-height: none;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.player-bg .stage-art {
+    z-index: 2;
+    padding: clamp(72px, 9vh, 112px) clamp(58px, 6vw, 116px) 154px;
+}
+
+.player-bg .stage-copy {
+    position: absolute;
+    z-index: 6;
+    top: clamp(72px, 10vh, 126px);
+    left: clamp(42px, 4.5vw, 86px);
+    width: min(270px, 22vw);
+    pointer-events: none;
+}
+
+.player-bg .stage-copy .eyebrow {
+    margin: 0 0 12px;
+    color: #ffd166;
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.24em;
+}
+
+.player-bg .stage-copy-anime {
+    margin: 0 0 9px;
+    color: rgba(244, 249, 255, 0.66);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.player-bg .stage-copy h1 {
+    margin: 0;
+    color: #ffffff;
+    font-size: clamp(32px, 3.2vw, 58px);
+    font-weight: 900;
+    line-height: 1.06;
+    letter-spacing: -0.045em;
+    text-wrap: balance;
+    text-shadow: 0 10px 30px rgba(0, 0, 0, 0.52);
+}
+
+.player-bg .stage-copy-sub,
+.player-bg .stage-copy-note {
+    overflow: hidden;
+    margin: 12px 0 0;
+    color: rgba(244, 249, 255, 0.62);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.5;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.player-bg .stage-copy-note {
+    margin-top: 5px;
+    color: rgba(255, 209, 102, 0.78);
+    font-size: 11px;
+}
+
+.player-bg .cover-large {
+    z-index: 4;
+    width: clamp(360px, 30vw, 580px);
+    transform: none;
+}
+
+.player-bg .stage-disc {
+    z-index: 2;
+    width: clamp(360px, 30vw, 580px);
+    margin-left: clamp(-290px, -15vw, -160px);
+}
+
+.player-bg .stage-disc-cover {
+    z-index: 1;
+    -webkit-mask: radial-gradient(circle at 50% 50%, transparent 0 8%, #000 8.7% 100%);
+    mask: radial-gradient(circle at 50% 50%, transparent 0 8%, #000 8.7% 100%);
+}
+
+.player-bg .stage-disc-hole {
+    z-index: 3;
+    background: radial-gradient(circle at 50% 50%,
+        transparent 0 8%,
+        rgba(255, 255, 255, 0.72) 8.5% 9.2%,
+        transparent 9.7% 22%,
+        rgba(255, 255, 255, 0.24) 22.5% 23.2%,
+        transparent 23.8% 100%);
+}
+
+.player-bg .stage-lyrics {
+    z-index: 2;
+    padding: clamp(132px, 15vh, 182px) clamp(34px, 5.5vw, 104px) 150px;
+}
+
+.player-bg .stage-lyrics .stage-head {
+    display: none;
+}
+
+.player-bg .lyrics {
+    height: min(62vh, 660px);
+    padding: 190px 0;
+}
+
+.player-bg .stage-spectrum {
+    z-index: 5;
+    left: clamp(58px, 5vw, 100px);
+    bottom: clamp(112px, 14vh, 164px);
+    width: clamp(360px, 32vw, 620px);
+    height: 92px;
+}
+
+.player-bg .stage-controls {
+    position: relative;
+    z-index: 7;
+    min-height: 104px;
+    padding: 18px clamp(24px, 3.2vw, 58px) 24px;
+}
+
+@media (max-width: 1180px) and (min-width: 901px) {
+    .player-bg .stage-copy {
+        left: 38px;
+        width: 210px;
+    }
+
+    .player-bg .stage-art {
+        padding-right: 40px;
+        padding-left: 150px;
+    }
+
+    .player-bg .cover-large,
+    .player-bg .stage-disc {
+        width: min(30vw, 520px);
+    }
+}
+
+@media (max-width: 900px) {
+    .player-bg .player-layout {
+        height: auto;
+        min-height: 100dvh;
+    }
+
+    .player-bg .player-stage {
+        height: auto;
+        min-height: 100dvh;
+        overflow: hidden;
+    }
+
+    .player-bg .stage-art {
+        min-height: min(92vw, 560px);
+        padding: 116px 18px 22px;
+        overflow: hidden;
+    }
+
+    .player-bg .stage-copy {
+        top: 28px;
+        left: 22px;
+        width: calc(100% - 44px);
+    }
+
+    .player-bg .stage-copy h1 {
+        font-size: clamp(28px, 8vw, 42px);
+    }
+
+    .player-bg .cover-large,
+    .player-bg .stage-disc {
+        width: min(66vw, 340px);
+    }
+
+    .player-bg .stage-disc {
+        margin-left: -24%;
+    }
+
+    .player-bg .stage-lyrics {
+        padding: 20px 22px 24px;
+    }
+
+    .player-bg .lyrics {
+        height: 300px;
+        padding: 108px 0;
+    }
+
+    .player-bg .stage-spectrum {
+        position: relative;
+        left: auto;
+        bottom: auto;
+        width: calc(100% - 44px);
+        height: 84px;
+        margin: 0 22px 4px;
+    }
+
+    .player-bg .stage-controls {
+        min-height: 0;
+        padding: 18px 22px 24px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .player-bg .stage-disc,
+    .player-bg .stage-disc-glow,
+    .player-bg .stage-particles i {
+        transition: none;
+    }
+}

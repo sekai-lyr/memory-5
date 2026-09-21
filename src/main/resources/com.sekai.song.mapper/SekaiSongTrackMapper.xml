@@ -3,7 +3,8 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sekai.song.mapper.SekaiSongTrackMapper">
     <sql id="libraryFilter">
-        AND (audio_url IS NULL OR audio_url NOT LIKE '%bilibili.com%')
+        AND ((local_audio_url IS NOT NULL AND TRIM(local_audio_url) &lt;&gt; '')
+        OR (local_video_url IS NOT NULL AND TRIM(local_video_url) &lt;&gt; ''))
     </sql>
 
     <insert id="insert" parameterType="com.sekai.song.model.Song" useGeneratedKeys="true" keyProperty="id">
@@ -73,6 +74,11 @@
 
     <update id="updateLocalVideoUrl">
         UPDATE sekai_song_track SET local_video_url = #{localVideoUrl}, update_time = NOW()
+        WHERE id = #{id} AND user_id = #{userId}
+    </update>
+
+    <update id="updateCoverUrl">
+        UPDATE sekai_song_track SET cover_url = #{coverUrl}, update_time = NOW()
         WHERE id = #{id} AND user_id = #{userId}
     </update>
 

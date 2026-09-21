@@ -47,10 +47,16 @@ public class BilibiliImportServiceImpl implements BilibiliImportService {
     private static final Pattern SERIES_ID_FIELD = Pattern.compile("(?i)(?:series_id|seriesId)[\"']?\\s*[:=]\\s*[\"']?(\\d{1,})");
     private static final Pattern SEASON_ID_FIELD = Pattern.compile("(?i)(?:season_id|seasonId)[\"']?\\s*[:=]\\s*[\"']?(\\d{1,})");
     private static final Pattern SID_FIELD = Pattern.compile("(?i)\\bsid[\"']?\\s*[:=]\\s*[\"']?(\\d{1,})");
-    private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(8))
-            .followRedirects(HttpClient.Redirect.NORMAL)
-            .build();
+    private static final class HttpClientHolder {
+        private static final HttpClient INSTANCE = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(8))
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .build();
+    }
+
+    private static HttpClient httpClient() {
+        return HttpClientHolder.INSTANCE;
+    }
 
     @Resource
     private SekaiSongPlaylistMapper playlistMapper;
@@ -194,7 +200,7 @@ public class BilibiliImportServiceImpl implements BilibiliImportService {
 
     private JsonNode fetchVideoDetailOnce(BilibiliVideoKey key) {
         try {
-            HttpResponse<String> response = HTTP_CLIENT.send(request(videoDetailUrl(key)),
+            HttpResponse<String> response = httpClient().send(request(videoDetailUrl(key)),
                     HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
                 return null;
@@ -299,7 +305,7 @@ public class BilibiliImportServiceImpl implements BilibiliImportService {
         Matcher matcher = B23_SHORT_LINK.matcher(rawText);
         while (matcher.find()) {
             try {
-                HttpResponse<Void> response = HTTP_CLIENT.send(request(matcher.group()),
+                HttpResponse<Void> response = httpClient().send(request(matcher.group()),
                         HttpResponse.BodyHandlers.discarding());
                 response.uri();
                 expanded.append(response.uri()).append('\n');
@@ -436,7 +442,7 @@ public class BilibiliImportServiceImpl implements BilibiliImportService {
 
     private JsonNode fetchDataOnce(String url) {
         try {
-            HttpResponse<String> response = HTTP_CLIENT.send(request(url),
+            HttpResponse<String> response = httpClient().send(request(url),
                     HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
                 return null;

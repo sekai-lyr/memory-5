@@ -48,10 +48,16 @@ public class NeteaseImportServiceImpl implements NeteaseImportService {
     private static final Pattern SONG_LINK_ID = Pattern.compile("(?:song\\?id=|/song/(?:\\?id=)?|\\bid[\"']?\\s*[:=]\\s*[\"']?)(\\d{4,})");
     private static final Pattern NUMBER_LINE = Pattern.compile("^\\D*(\\d{4,})\\D*$");
     private static final Pattern LOOSE_NUMBER_ID = Pattern.compile("(?<![A-Za-z0-9])(\\d{4,})(?![A-Za-z0-9])");
-    private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(8))
-            .followRedirects(HttpClient.Redirect.NORMAL)
-            .build();
+    private static final class HttpClientHolder {
+        private static final HttpClient INSTANCE = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(8))
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .build();
+    }
+
+    private static HttpClient httpClient() {
+        return HttpClientHolder.INSTANCE;
+    }
 
     @Resource
     private SekaiSongPlaylistMapper playlistMapper;
@@ -232,7 +238,7 @@ public class NeteaseImportServiceImpl implements NeteaseImportService {
     private JsonNode fetchPlaylist(String playlistId) throws IOException, InterruptedException {
         for (String template : PLAYLIST_API_TEMPLATES) {
             HttpRequest request = request(String.format(template, playlistId));
-            HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+            HttpResponse<String> response = httpClient().send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
                 continue;
             }
@@ -323,7 +329,7 @@ public class NeteaseImportServiceImpl implements NeteaseImportService {
     private List<JsonNode> fetchSongDetailsFromUrl(String url) {
         List<JsonNode> songs = new ArrayList<>();
         try {
-            HttpResponse<String> response = HTTP_CLIENT.send(
+            HttpResponse<String> response = httpClient().send(
                     request(url),
                     HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
             if (response.statusCode() >= 200 && response.statusCode() < 300) {

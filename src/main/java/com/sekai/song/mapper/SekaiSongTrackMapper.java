@@ -29,6 +29,8 @@ public interface SekaiSongTrackMapper {
 
     int updateLocalVideoUrl(@Param("id") Long id, @Param("userId") Long userId, @Param("localVideoUrl") String localVideoUrl);
 
+    int updateCoverUrl(@Param("id") Long id, @Param("userId") Long userId, @Param("coverUrl") String coverUrl);
+
     Song findByIdAndUserId(@Param("id") Long id, @Param("userId") Long userId);
 
     Song findByAudioUrlAndUserId(@Param("audioUrl") String audioUrl, @Param("userId") Long userId);

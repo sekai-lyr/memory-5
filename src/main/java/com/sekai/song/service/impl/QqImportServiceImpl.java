@@ -49,10 +49,16 @@ public class QqImportServiceImpl implements QqImportService {
     private static final Pattern TRACK_INFO_MID = Pattern.compile("(?i)\"track_info\"\\s*:\\s*\\{[^{}]*\"mid\"\\s*:\\s*\"([0-9A-Za-z]{8,})\"");
     private static final Pattern MID_LINE = Pattern.compile("^[0-9A-Za-z]{8,}$");
     private static final Pattern NUMBER_LINE = Pattern.compile("^\\D*(\\d{5,})\\D*$");
-    private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(8))
-            .followRedirects(HttpClient.Redirect.NORMAL)
-            .build();
+    private static final class HttpClientHolder {
+        private static final HttpClient INSTANCE = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(8))
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .build();
+    }
+
+    private static HttpClient httpClient() {
+        return HttpClientHolder.INSTANCE;
+    }
 
     @Resource
     private SekaiSongPlaylistMapper playlistMapper;
@@ -206,7 +212,7 @@ public class QqImportServiceImpl implements QqImportService {
 
     private JsonNode fetchSongDetailOnce(QqSongKey key) {
         try {
-            HttpResponse<String> response = HTTP_CLIENT.send(
+            HttpResponse<String> response = httpClient().send(
                     request(SONG_DETAIL_API + URLEncoder.encode(songDetailPayload(key), StandardCharsets.UTF_8)),
                     HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
@@ -263,7 +269,7 @@ public class QqImportServiceImpl implements QqImportService {
 
     private JsonNode fetchPlaylistDataOnce(String playlistId, int begin, int size) {
         try {
-            HttpResponse<String> response = HTTP_CLIENT.send(
+            HttpResponse<String> response = httpClient().send(
                     request(SONG_DETAIL_API + URLEncoder.encode(playlistDetailPayload(playlistId, begin, size), StandardCharsets.UTF_8)),
                     HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
             if (response.statusCode() < 200 || response.statusCode() >= 300) {
@@ -404,7 +410,7 @@ public class QqImportServiceImpl implements QqImportService {
                 continue;
             }
             try {
-                HttpResponse<String> response = HTTP_CLIENT.send(request(link),
+                HttpResponse<String> response = httpClient().send(request(link),
                         HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
                 expanded.append(response.uri()).append('\n');
                 String body = response.body();

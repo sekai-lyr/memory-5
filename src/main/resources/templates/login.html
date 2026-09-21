@@ -4,19 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sekai Song - 登录</title>
-    <link rel="stylesheet" th:href="@{/css/login.css(v=20260514)}" href="/css/login.css?v=20260514">
+    <link rel="stylesheet" th:href="@{/css/auth.css(v=20260915g)}" href="/css/auth.css?v=20260915g">
+    <link rel="stylesheet" th:href="@{/css/showcase-fold.css(v=20260915g)}" href="/css/showcase-fold.css?v=20260915g">
 </head>
 <body>
-<main class="login-page">
-    <section class="brand-area">
-        <p class="eyebrow">Anime Music Player</p>
-        <h1>Sekai Song</h1>
-        <p class="slogan">把 OP、ED、插曲和那些循环了一整晚的旋律，收进只属于你的二次元歌单。</p>
-        <div class="mini-stats">
-            <span>专属动漫歌单</span>
-            <span>同步歌词</span>
-            <span>背景皮肤</span>
-        </div>
+<main class="auth-page">
+    <section class="brand-area" data-login-stage>
+        <div th:replace="~{showcase :: showcase}"></div>
     </section>
     <section class="form-area">
         <div class="login-card">
@@ -47,10 +41,7 @@
         </div>
     </section>
 </main>
-<script th:src="@{/js/login.js}" src="/js/login.js"></script>
+<script th:src="@{/js/showcase-fold.js(v=20260915f)}" src="/js/showcase-fold.js?v=20260915f"></script>
+<script th:src="@{/js/login.js(v=20260914c)}" src="/js/login.js?v=20260914c"></script>
 </body>
 </html>
-
-
-
-

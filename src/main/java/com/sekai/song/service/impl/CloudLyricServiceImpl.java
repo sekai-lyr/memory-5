@@ -21,10 +21,16 @@ public class CloudLyricServiceImpl implements CloudLyricService {
     private static final String NETEASE_LYRIC_API = "https://music.163.com/api/song/lyric?id=%s&lv=1&kv=1&tv=-1";
     private static final String NETEASE_SEARCH_API = "https://music.163.com/api/search/get/web?s=%s&type=1&limit=8&offset=0";
     private static final String QQ_MUSICU_API = "https://u.y.qq.com/cgi-bin/musicu.fcg?data=";
-    private static final HttpClient HTTP_CLIENT = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(8))
-            .followRedirects(HttpClient.Redirect.NORMAL)
-            .build();
+    private static final class HttpClientHolder {
+        private static final HttpClient INSTANCE = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(8))
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .build();
+    }
+
+    private static HttpClient httpClient() {
+        return HttpClientHolder.INSTANCE;
+    }
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -34,7 +40,7 @@ public class CloudLyricServiceImpl implements CloudLyricService {
             return null;
         }
         try {
-            HttpResponse<String> response = HTTP_CLIENT.send(
+            HttpResponse<String> response = httpClient().send(
                     request(String.format(NETEASE_LYRIC_API, songId), "https://music.163.com/"),
                     HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
             if (!ok(response)) {
@@ -81,7 +87,7 @@ public class CloudLyricServiceImpl implements CloudLyricService {
     private String fetchBestNeteaseLyric(String title, String artist) {
         try {
             String query = joinQuery(title, artist);
-            HttpResponse<String> response = HTTP_CLIENT.send(
+            HttpResponse<String> response = httpClient().send(
                     request(String.format(NETEASE_SEARCH_API, URLEncoder.encode(query, StandardCharsets.UTF_8)), "https://music.163.com/"),
                     HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
             if (!ok(response)) {
@@ -116,7 +122,7 @@ public class CloudLyricServiceImpl implements CloudLyricService {
     private String fetchBestQqLyric(String title, String artist) {
         try {
             String payload = qqSearchPayload(joinQuery(title, artist));
-            HttpResponse<String> response = HTTP_CLIENT.send(
+            HttpResponse<String> response = httpClient().send(
                     request(QQ_MUSICU_API + URLEncoder.encode(payload, StandardCharsets.UTF_8), "https://y.qq.com/"),
                     HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
             if (!ok(response)) {
@@ -157,7 +163,7 @@ public class CloudLyricServiceImpl implements CloudLyricService {
     private String fetchQqLyricByMusicu(String songMid, Long songId) {
         try {
             String payload = qqLyricPayload(songMid, songId);
-            HttpResponse<String> response = HTTP_CLIENT.send(
+            HttpResponse<String> response = httpClient().send(
                     request(QQ_MUSICU_API + URLEncoder.encode(payload, StandardCharsets.UTF_8), "https://y.qq.com/"),
                     HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
             if (!ok(response)) {
@@ -182,7 +188,7 @@ public class CloudLyricServiceImpl implements CloudLyricService {
             if (songId != null && songId > 0) {
                 url.append("&songid=").append(songId);
             }
-            HttpResponse<String> response = HTTP_CLIENT.send(
+            HttpResponse<String> response = httpClient().send(
                     request(url.toString(), "https://y.qq.com/"),
                     HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
             if (!ok(response)) {

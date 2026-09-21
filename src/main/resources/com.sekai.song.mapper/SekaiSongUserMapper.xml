@@ -3,8 +3,8 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.sekai.song.mapper.SekaiSongUserMapper">
     <insert id="insert" parameterType="com.sekai.song.model.User" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO sekai_song_user(user_name, password, nick_name, avatar_url, license_plan, license_expire_time, license_code)
-        VALUES (#{userName}, #{password}, #{nickName}, #{avatarUrl}, #{licensePlan}, #{licenseExpireTime}, #{licenseCode})
+        INSERT INTO sekai_song_user(user_name, password, nick_name, avatar_url)
+        VALUES (#{userName}, #{password}, #{nickName}, #{avatarUrl})
     </insert>
 
     <select id="findByUserName" resultType="com.sekai.song.model.User">
@@ -15,12 +15,4 @@
         SELECT * FROM sekai_song_user WHERE id = #{id} LIMIT 1
     </select>
 
-    <update id="updateLicense">
-        UPDATE sekai_song_user
-        SET license_plan = #{licensePlan},
-            license_expire_time = #{licenseExpireTime},
-            license_code = #{licenseCode},
-            update_time = NOW()
-        WHERE id = #{id}
-    </update>
 </mapper>

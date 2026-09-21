@@ -3,23 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sekai Song - 歌曲库</title>
-    <link rel="stylesheet" th:href="@{/css/app.css(v=20260527e)}" href="/css/app.css?v=20260527e">
+    <title>Sekai Song - 选择歌曲</title>
+    <link rel="stylesheet" th:href="@{/css/app.css(v=20260830b)}" href="/css/app.css?v=20260830b">
+    <link rel="stylesheet" th:href="@{/css/songs-selection.css(v=20260906b)}" href="/css/songs-selection.css?v=20260906b">
 </head>
-<body>
-<div class="app-shell">
+<body class="song-selection-page selection-carousel-page song-library-page">
+<div class="app-shell song-selection-shell">
     <div th:replace="~{fragments :: sidebar('songs')}"></div>
-    <main class="content">
-        <div class="section-title"><h1>歌曲库</h1><span th:text="${totalCount + ' 首'}">0 首</span></div>
-        <form class="search-bar" action="/songs" method="get">
-            <input name="keyword" th:value="${keyword}" placeholder="搜索歌名、歌手、动漫、标签">
-            <button type="submit">搜索</button>
-        </form>
-        <div class="message success" th:if="${message}" th:text="${message}"></div>
-        <div class="message error" th:if="${error}" th:text="${error}"></div>
-        <section class="editor-panel">
-            <h2>添加动漫歌曲</h2>
-            <form class="grid-form" action="/songs/add" method="post">
+
+    <main class="content song-selection-content">
+        <div class="selection-background" aria-hidden="true">
+            <img data-selection-background
+                 th:if="${!#lists.isEmpty(songs) && #strings.isEmpty(songs[0].bilibiliEmbedParam)}"
+                 th:src="${#strings.isEmpty(songs[0].coverUrl) ? '/images/login-music-room.png' : songs[0].coverUrl}"
+                 alt="">
+            <span class="selection-background-wash"></span>
+            <span class="selection-background-glow selection-background-glow-one"></span>
+            <span class="selection-background-glow selection-background-glow-two"></span>
+        </div>
+
+        <header class="selection-toolbar">
+            <div>
+                <p class="selection-kicker">SEKAI SONG</p>
+                <h1>选择一首歌</h1>
+                <p class="selection-intro">从你的动漫歌库中挑选今晚的旋律。</p>
+            </div>
+            <div class="selection-toolbar-meta">
+                <span th:text="${totalCount + ' 首歌曲'}">0 首歌曲</span>
+                <a class="selection-toolbar-play" data-selection-play
+                   th:href="@{/player/{id}(id=${songs[0].id}, autoplay=1)}">
+                    <span class="selection-play-icon">▶</span>
+                    <span>播放当前</span>
+                </a>
+                <form class="selection-search" action="/songs" method="get">
+                    <label class="sr-only" for="songSearch">搜索歌曲</label>
+                    <input id="songSearch" name="keyword" th:value="${keyword}" placeholder="搜索歌名、歌手或动漫">
+                    <button type="submit" aria-label="搜索">⌕</button>
+                </form>
+            </div>
+        </header>
+
+        <div class="message success selection-message" th:if="${message}" th:text="${message}"></div>
+        <div class="message error selection-message" th:if="${error}" th:text="${error}"></div>
+
+        <section class="selection-stage" th:if="${!#lists.isEmpty(songs)}">
+            <section class="selection-feature" data-selection-feature>
+                <div class="selection-feature-copy">
+                    <p class="selection-feature-label">NOW SELECTING</p>
+                    <p class="selection-feature-anime" data-selection-anime th:text="${songs[0].animeTitle}">Anime</p>
+                    <h2 data-selection-title th:text="${songs[0].title}">Song</h2>
+                    <p class="selection-feature-sub" data-selection-sub
+                       th:text="${songs[0].artist + ' · ' + songs[0].albumName}">Artist · Album</p>
+                    <p class="selection-feature-note">选择歌曲后，主视觉会跟随封面切换。</p>
+                    <div class="selection-feature-actions">
+                        <a class="selection-play-action"
+                           data-selection-play
+                           th:href="@{/player/{id}(id=${songs[0].id}, autoplay=1)}">
+                            <span class="selection-play-icon">▶</span>
+                            <span>播放这首</span>
+                        </a>
+                        <span class="selection-feature-hint">点击右侧曲目预览</span>
+                    </div>
+                </div>
+
+                <div class="selection-feature-art" data-selection-feature-art>
+                    <span class="selection-art-shadow"></span>
+                    <div class="selection-cover-frame">
+                        <img data-selection-feature-cover
+                             th:src="${#strings.isEmpty(songs[0].coverUrl) ? '/images/login-music-room.png' : songs[0].coverUrl}"
+                             alt="">
+                    </div>
+                    <span class="selection-art-sheen"></span>
+                    <span class="selection-art-orbit selection-art-orbit-one"></span>
+                    <span class="selection-art-orbit selection-art-orbit-two"></span>
+                </div>
+            </section>
+
+            <aside class="selection-rail" data-selection-rail>
+                <div class="selection-rail-head">
+                    <div>
+                        <p class="selection-feature-label">LIBRARY</p>
+                        <h2>歌曲选择</h2>
+                    </div>
+                    <span th:text="${currentPage + ' / ' + totalPages}">1 / 1</span>
+                </div>
+
+                <div class="selection-track-list" data-selection-track-list>
+                    <div class="selection-track"
+                         th:each="song, songStat : ${songs}"
+                         th:classappend="${songStat.first} ? ' is-active'"
+                         th:data-selection-track-id="${song.id}">
+                        <a class="selection-track-select"
+                                th:href="@{/player/{id}(id=${song.id}, autoplay=1)}"
+                                data-selection-track
+                                th:data-id="${song.id}"
+                                th:data-title="${song.title}"
+                                th:data-artist="${song.artist}"
+                                th:data-anime="${song.animeTitle}"
+                                th:data-album="${song.albumName}"
+                                th:data-cover="${!#strings.isEmpty(song.bilibiliEmbedParam) ? '/images/login-music-room.png' : (#strings.isEmpty(song.coverUrl) ? '/images/login-music-room.png' : song.coverUrl)}"
+                                th:data-local-audio="${song.localAudioUrl}"
+                                th:data-player-url="@{/player/{id}(id=${song.id}, autoplay=1)}">
+                            <span class="selection-track-index" th:text="${songStat.index + 1 < 10 ? '0' + (songStat.index + 1) : songStat.index + 1}">01</span>
+                            <img th:if="${#strings.isEmpty(song.bilibiliEmbedParam)}"
+                                 th:src="${#strings.isEmpty(song.coverUrl) ? '/images/login-music-room.png' : song.coverUrl}" alt="">
+                            <span class="selection-track-video-art" th:unless="${#strings.isEmpty(song.bilibiliEmbedParam)}">
+                                <span>▶ B站视频</span>
+                            </span>
+                            <span class="selection-track-copy">
+                                <strong th:text="${song.title}">Song</strong>
+                                <small th:text="${song.artist + ' · ' + song.animeTitle}">Artist · Anime</small>
+                            </span>
+                            <span class="selection-track-arrow">↗</span>
+                        </a>
+                        <form class="selection-track-action" th:action="@{/songs/favorite/{id}(id=${song.id})}" method="post">
+                            <input type="hidden" name="returnTo" value="/songs">
+                            <button type="submit" th:classappend="${song.favorite} ? ' is-favorite'" th:title="${song.favorite} ? '取消收藏' : '收藏'">
+                                <span th:text="${song.favorite} ? '♥' : '♡'">♡</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="selection-player-panel" data-selection-player hidden>
+                    <div class="selection-player-head">
+                        <div>
+                            <p class="selection-feature-label">NOW PLAYING</p>
+                            <h2>正在播放</h2>
+                        </div>
+                        <button type="button" class="selection-player-back" data-selection-player-back>返回选歌</button>
+                    </div>
+                    <div class="selection-player-art">
+                        <div class="selection-player-disc" aria-hidden="true">
+                            <span class="selection-player-disc-lines"></span>
+                            <span class="selection-player-disc-hole"></span>
+                            <img data-selection-player-disc-cover src="/images/login-music-room.png" alt="">
+                        </div>
+                        <img class="selection-player-cover" data-selection-player-cover src="/images/login-music-room.png" alt="">
+                    </div>
+                    <div class="selection-player-copy">
+                        <strong data-selection-player-title>Song</strong>
+                        <span data-selection-player-sub>Artist</span>
+                    </div>
+                    <div class="selection-player-controls">
+                        <button type="button" data-selection-player-toggle aria-label="播放或暂停">▶</button>
+                        <a data-selection-player-open href="/player" title="打开完整播放器">打开完整播放器 ↗</a>
+                    </div>
+                    <p class="selection-player-status" data-selection-player-status>播放时圆盘与背景会跟随歌曲变化。</p>
+                </div>
+                <nav class="pager selection-pager selection-carousel-pagination" aria-label="歌曲库分页">
+                    <a th:if="${currentPage > 1}"
+                       th:href="@{/songs(page=${currentPage - 1}, keyword=${keyword})}">上一页</a>
+                    <div class="selection-pager-numbers">
+                        <a th:each="pageNumber : ${#numbers.sequence(1, totalPages)}"
+                           th:href="@{/songs(page=${pageNumber}, keyword=${keyword})}"
+                           th:classappend="${pageNumber == currentPage} ? ' is-current'"
+                           th:attr="aria-current=${pageNumber == currentPage ? 'page' : null}"
+                           th:text="${pageNumber}">1</a>
+                    </div>
+                    <a th:if="${currentPage < totalPages}"
+                       th:href="@{/songs(page=${currentPage + 1}, keyword=${keyword})}">下一页</a>
+                </nav>
+            </aside>
+        </section>
+
+        <section class="selection-empty" th:if="${#lists.isEmpty(songs)}">
+            <div class="selection-empty-mark">♪</div>
+            <h2>歌库还没有歌曲</h2>
+            <p>先添加一首动漫歌曲，再从这里开始选择。</p>
+        </section>
+
+        <details class="selection-add-panel">
+            <summary>添加动漫歌曲</summary>
+            <form class="grid-form selection-add-form" action="/songs/add" method="post">
                 <input name="title" placeholder="歌曲名 *" required>
                 <input name="artist" placeholder="歌手">
                 <input name="animeTitle" placeholder="所属动漫">
@@ -32,40 +188,15 @@
                 <textarea name="lyricText" placeholder="[00:12] 第一行歌词&#10;[00:18] 第二行歌词"></textarea>
                 <button type="submit">加入歌曲库</button>
             </form>
-        </section>
-        <section class="card-grid">
-            <article class="song-card" th:each="song : ${songs}">
-                <a th:href="@{/player/{id}(id=${song.id})}">
-                    <img th:src="${#strings.isEmpty(song.coverUrl) ? '/images/login-music-room.png' : song.coverUrl}" alt="">
-                    <strong th:text="${song.title}">Song</strong>
-                    <span th:text="${song.artist + ' · ' + song.animeTitle}">Artist</span>
-                </a>
-                <div class="tag-line">
-                    <em th:text="${song.mood}">mood</em>
-                    <em th:text="${song.tags}">tags</em>
-                    <em th:if="${!#strings.isEmpty(song.neteaseSongId)}">网易云可播放</em>
-                </div>
-                <div class="row-actions">
-                    <form th:action="@{/songs/favorite/{id}(id=${song.id})}" method="post">
-                        <input type="hidden" name="returnTo" value="/songs">
-                        <button type="submit" th:text="${song.favorite} ? '取消收藏' : '收藏'">收藏</button>
-                    </form>
-                    <form th:action="@{/songs/delete/{id}(id=${song.id})}" method="post">
-                        <button type="submit">删除</button>
-                    </form>
-                </div>
-            </article>
-        </section>
-        <div class="pager">
-            <a th:if="${currentPage > 1}" th:href="@{/songs(page=${currentPage - 1}, keyword=${keyword})}">上一页</a>
-            <span th:text="${currentPage + ' / ' + totalPages}">1 / 1</span>
-            <a th:if="${currentPage < totalPages}" th:href="@{/songs(page=${currentPage + 1}, keyword=${keyword})}">下一页</a>
+        </details>
+
+        <div class="selection-footer-row">
+            <div class="selection-page-note">每页 30 首歌曲，左右滑动浏览；点击封面进入播放页。</div>
         </div>
+
+        <audio class="selection-audio" data-selection-audio preload="metadata"></audio>
     </main>
 </div>
+<script th:src="@{/js/songs-selection.js(v=20260903c)}" src="/js/songs-selection.js?v=20260903c"></script>
 </body>
 </html>
-
-
-
-

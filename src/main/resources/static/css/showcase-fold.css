@@ -1,0 +1,213 @@
+/* Sekai auth showcase: parallel page layers, screen depth and pixel dissolve. */
+.brand-area {
+    position: relative;
+    display: block;
+    min-width: 0;
+    padding: 0;
+    overflow: hidden;
+    isolation: isolate;
+    background: transparent;
+}
+.login-product-showcase { position: relative; z-index: 1; height: 100%; min-height: 740px; color: #eef7ff; }
+.showcase-heading { position: absolute; z-index: 5; top: 42px; left: 7%; display: grid; gap: 16px; }
+.showcase-brand { display: flex; align-items: center; gap: 12px; width: fit-content; color: #f0f7ff; text-decoration: none; font-size: 20px; font-weight: 700; letter-spacing: -.6px; }
+.showcase-brand > span { position: relative; display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid #9bebef50; border-radius: 10px; background: #8ae9e918; color: #8ceada; font-size: 24px; }
+.showcase-brand > span > span { position: absolute; right: 2px; top: 1px; font-size: 12px; }
+.showcase-eyebrow { color: #92accb; font-size: 9px; letter-spacing: 2.3px; font-weight: 600; }
+.showcase-world { position: absolute; inset: 100px 0 195px; pointer-events: none; }
+.showcase-perspective { position: absolute; left: 24%; top: 50%; width: 66%; max-width: 540px; aspect-ratio: 1.28; transform: translateY(-45%); perspective: 1600px; }
+.login-monitor { position: absolute; top: 7%; width: 100%; transform: rotateX(7deg) rotateY(-17deg) rotateZ(-4deg); transform-style: preserve-3d; }
+.monitor-display { position: relative; width: 100%; aspect-ratio: 1.57; border: 2px solid #536379; border-bottom-color: #111a2b; border-right-color: #060c19; border-radius: 12px; background: linear-gradient(145deg, #222e46, #080f22 55%); box-shadow: 4px 5px 0 #050a18, 14px 23px 40px #02081975; transform-style: preserve-3d; }
+.monitor-screen { position: absolute; inset: 9px 8px 20px; background: #0c162d; border-radius: 5px; transform-style: preserve-3d; }
+.monitor-camera { position: absolute; width: 3px; height: 3px; top: 2px; left: 50%; border-radius: 50%; background: #7387a8; }
+.monitor-wordmark { position: absolute; bottom: 4px; width: 100%; text-align: center; font-size: 6px; letter-spacing: 2.5px; color: #98a2b6; }
+.monitor-neck { position: relative; z-index: -1; width: 19%; height: 65px; margin: -1px auto 0; background: linear-gradient(90deg, #4c607b, #a8b8cd 40%, #788ba6 85%, #3a4c69); clip-path: polygon(18% 0, 82% 0, 90% 93%, 100% 100%, 0 100%, 10% 93%); }
+.monitor-base { width: 38%; height: 16px; margin: -2px auto 0; border: 1px solid #a5b5cf70; border-radius: 50% 50% 30% 30%; background: linear-gradient(#afbdd0, #60718c 55%, #3c4d68); box-shadow: 0 13px 16px #02072150; }
+.monitor-shadow { position: absolute; left: 23%; right: 5%; bottom: -1%; height: 24px; background: #03092388; border-radius: 50%; filter: blur(16px); }
+
+.panel-stack { position: absolute; inset: 0; transform-style: preserve-3d; }
+.showcase-panel { position: absolute; inset: 0; opacity: 0; transform-origin: 50% 50%; transform-style: preserve-3d; }
+.showcase-panel:first-child { opacity: 1; }
+.showcase-panel.is-screen-base { opacity: 1; transform: translateZ(.1px); }
+.panel-surface { position: absolute; inset: 0; display: flex; flex-direction: column; border: 1px solid #a5c8ff45; border-radius: 6px; overflow: hidden; color: #e5edf9; background: #101b33; box-shadow: 2px 4px 12px #01061950, 12px 18px 28px #02051b38; font-size: clamp(6px, .66vw, 10px); font-variant-numeric: tabular-nums; }
+.panel-surface h3, .panel-surface h4, .panel-surface p { margin: 0; }
+.panel-surface h3 { font-size: 1.9em; letter-spacing: -.04em; line-height: 1.4; }
+.panel-surface h4 { display: flex; justify-content: space-between; align-items: center; font-size: 1.05em; margin-bottom: .7em; }
+.panel-surface small { font-size: .75em; }
+.panel-surface em { font-style: normal; font-size: .75em; color: #86a0b7; }
+.preview-chrome { display: flex; flex: 0 0 9%; align-items: center; justify-content: space-between; padding: 0 3%; border-bottom: 1px solid #94b0d119; background: #111c32; color: #8b9cb7; font-size: .75em; letter-spacing: 1px; }
+.preview-chrome > span { display: flex; gap: 4px; }
+.preview-chrome i { width: 4px; height: 4px; border-radius: 50%; background: #f397ac; }
+.preview-chrome i:nth-child(2) { background: #e8c991; }
+.preview-chrome i:nth-child(3) { background: #7dddcf; }
+.preview-chrome small { letter-spacing: .5px; }
+.preview-app { display: grid; grid-template-columns: 16% minmax(0, 1fr); flex: 1; min-height: 0; }
+.preview-sidebar { display: flex; flex-direction: column; gap: .7em; padding: 15% 10% 12%; background: #0b172a; color: #8e9eb5; }
+.preview-sidebar > b { color: #b5f4e8; font-size: 2em; margin: 0 0 .3em .2em; }
+.preview-sidebar > span { padding: .65em .6em; white-space: nowrap; font-size: .85em; border-radius: 3px; }
+.preview-sidebar .is-selected { color: #1e3f4c; background: linear-gradient(130deg, #b8ebdf, #ead1de); }
+.preview-sidebar > small { margin-top: auto; font-size: .5em; letter-spacing: 1px; }
+.preview-content { padding: 3.6%; min-width: 0; }
+.preview-home .preview-content { background: #edf3f8; color: #253548; }
+.preview-hero { position: relative; padding: 4%; border-radius: 5px; color: #f5fbff; background: linear-gradient(90deg, #0c1c35cf, #0c1c3520), url("../images/login-music-room.png") center 45% / cover; }
+.preview-hero > small { color: #94e9da; letter-spacing: 1px; }
+.preview-hero h3 { margin: .15em 0 .2em; }
+.preview-hero p { font-size: .75em; color: #d6e2f3; }
+.preview-pill { display: inline-block; margin-top: .8em; padding: .6em 1em; border-radius: 3px; background: linear-gradient(130deg, #b3eedc, #efcea9); color: #14303b; font-size: .8em; font-weight: 700; }
+.preview-hero .preview-pill { position: absolute; right: 4%; bottom: 15%; }
+.preview-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3%; margin: 3% 0; }
+.preview-stats > span { display: grid; gap: .3em; padding: .6em; border: 1px solid #dbe6ed; border-radius: 4px; background: #fff; color: #748292; font-size: .7em; }
+.preview-stats b { color: #23384a; font-size: 1.9em; }
+.preview-home-bottom { display: grid; grid-template-columns: 1.4fr 1fr; gap: 4%; }
+.preview-song { display: flex; align-items: center; gap: .8em; padding: .65em .4em; border-bottom: 1px solid #95a8c11f; }
+.preview-song > span { flex: 1; min-width: 0; font-size: .9em; white-space: nowrap; }
+.preview-song small { display: block; margin-top: .5em; color: #91a1b6; font-size: .65em; }
+.preview-song > b { color: #8a99ae; font-size: .75em; }
+.preview-thumb { display: block; flex-shrink: 0; width: 2.5em; height: 2.5em; border-radius: 3px; background: url("../images/login-music-room.png") 44% center / cover; outline: 1px solid #ffffff14; outline-offset: -1px; }
+.preview-thumb--pink { background-position: 80% 30% !important; filter: hue-rotate(320deg); }
+.preview-thumb--gold { background-position: 10% 80% !important; filter: hue-rotate(165deg) saturate(.7); }
+.preview-collections > span { display: flex; justify-content: space-between; border-radius: 3px; background: #fff; padding: .65em; margin-bottom: .75em; font-size: .8em; }
+.preview-collections b { color: #e77eac; }
+.preview-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4%; }
+.preview-title small { color: #b4c4e2; font-size: .55em; letter-spacing: 1px; }
+.preview-search { padding: .7em; border: 1px solid #9aa8c425; border-radius: 3px; color: #9bacc5; font-size: .6em; }
+.preview-selection { background: radial-gradient(ellipse at 25% 65%, #6c4c5360, transparent 80%), #151a2d; }
+.preview-selection .preview-sidebar { background: #0c1121; }
+.preview-selection .preview-sidebar .is-selected { background: linear-gradient(135deg, #f3cf92, #e9a9bc); color: #292231; }
+.preview-selection-grid { display: grid; grid-template-columns: .9fr 1.25fr; gap: 6%; }
+.preview-feature > small { font-size: .55em; color: #d7b99b; letter-spacing: 1px; }
+.preview-cover { display: block; aspect-ratio: 1; background: url("../images/login-music-room.png") center / cover; border-radius: 4px; outline: 1px solid #ffffff26; outline-offset: -1px; }
+.preview-feature .preview-cover { width: 66%; margin: 6% 0; box-shadow: 9px 9px 20px #0005; transform: rotate(-5deg); }
+.preview-feature h4 { margin-bottom: .5em; font-size: 1.2em; }
+.preview-feature p { font-size: .65em; color: #aba6ba; }
+.preview-track-list { min-width: 0; padding: 6% 5%; border: 1px solid #b8bbde20; border-radius: 5px; background: #0b10235c; }
+.preview-track-list h4 { font-size: .85em; }
+.preview-track-list .preview-song { padding: .8em .45em; font-size: .85em; }
+.preview-track-list .is-selected { border: 1px solid #d9ba8d4f; border-radius: 3px; background: #b6a08817; }
+.preview-mini-player { display: flex; gap: 9%; align-items: center; margin-top: 10%; color: #efc895; }
+.preview-mini-player i { flex: 1; height: 2px; background: linear-gradient(90deg, #e8c79c 38%, #b7bdce33 38%); }
+.preview-cover--playlist { position: relative; background-image: linear-gradient(0deg, #10223ecf, transparent), url("../images/login-music-room.png"); }
+.preview-cover--playlist span { position: absolute; left: 10%; bottom: 10%; font-size: 1.2em; line-height: 1.1; font-weight: 800; color: #fcdfb5; }
+.preview-playlist-note { margin-top: 14%; font-size: .7em; color: #9dabc6; line-height: 1.9; }
+.preview-playlist-note b { color: #e8c5a8; font-weight: 500; }
+.preview-favorites .preview-content { background: #eef3f8; color: #253548; }
+.preview-favorites .preview-title small, .preview-favorites .preview-search { color: #71849a; }
+.preview-card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4%; }
+.preview-card-grid > div { position: relative; padding: 6%; border: 1px solid #dce4ed; border-radius: 5px; background: #fff; }
+.preview-card-grid b { display: block; margin: 1em 0 .5em; font-size: .8em; }
+.preview-card-grid small { color: #8c98a8; font-size: .65em; }
+.preview-card-grid em { position: absolute; right: 12%; top: 9%; color: #f095b4; }
+.preview-favorite-note { display: flex; align-items: center; gap: 5%; margin-top: 5%; padding: 4%; border-radius: 5px; background: #dceae9; font-size: .85em; }
+.preview-favorite-note > span { color: #db80a0; font-size: 2.5em; }
+.preview-favorite-note small { display: block; margin-top: .6em; color: #72908f; }
+.preview-favorite-note > b { margin-left: auto; color: #5c8582; font-size: .6em; }
+.preview-player { background: #111b2a; }
+.preview-player-body { position: relative; flex: 1; background: linear-gradient(90deg, #08182980, #091324ab), url("../images/login-music-room.png") center / cover; }
+.preview-player-heading { position: absolute; left: 6%; top: 7%; }
+.preview-player-heading > small { letter-spacing: 1.5px; color: #a1e2dc; font-size: .6em; }
+.preview-player-heading h3 { font-size: 1.6em; margin: .25em 0; }
+.preview-player-heading p { color: #acbccf; font-size: .65em; }
+.preview-album { position: absolute; width: 28%; left: 7%; top: 32%; }
+.preview-album > .preview-cover { position: relative; z-index: 1; box-shadow: 5px 10px 20px #02091860; }
+.preview-disc { position: absolute; inset: 2% -41% 2% 45%; display: grid; place-items: center; border: 2px solid #8290a55c; border-radius: 50%; background: repeating-radial-gradient(circle, #192536 0 2px, #263144 3px, #0e1928 4px 5px); }
+.preview-disc i { width: 33%; height: 33%; border: 5px solid #c1aabe; border-radius: 50%; background: #18314a; }
+.preview-lyrics { position: absolute; top: 20%; right: 6%; width: 40%; display: grid; gap: 1.5em; text-align: center; font-size: .9em; color: #aabaca; }
+.preview-lyrics small { margin-bottom: .5em; font-size: .6em; letter-spacing: 2px; color: #b9ccde; }
+.preview-lyrics strong { color: #b4f6e8; font-size: 1.2em; text-shadow: 0 0 12px #9eeed657; }
+.preview-player-controls { position: absolute; left: 7%; right: 7%; bottom: 4%; }
+.preview-player-controls > div { display: flex; align-items: center; gap: 3%; }
+.preview-player-controls i { flex: 1; height: 2px; background: linear-gradient(90deg, #a0eadb 32%, #ffffff40 32%); }
+.preview-player-controls small { font-size: .6em; color: #a8c1cd; }
+.preview-player-controls p { display: flex; align-items: center; justify-content: center; gap: 8%; margin-top: 2%; font-size: 1.15em; }
+.preview-player-controls b { display: grid; place-items: center; width: 2em; height: 2em; border-radius: 50%; background: #c3f0df; color: #15302c; font-size: .9em; }
+
+.pixel-fragments { position: absolute; inset: 0; pointer-events: none; }
+.pixel-fragment { position: absolute; opacity: 0; border-radius: 1px; }
+.monitor-dock { position: absolute; left: 50%; bottom: 3%; display: flex; gap: 4px; padding: 4px 6px; transform: translate3d(-50%, 0, 1px); border: 1px solid #cee1ff24; border-radius: 5px; background: #101b35e6; }
+.monitor-dock i { display: grid; place-items: center; width: 15px; height: 15px; border-radius: 3px; background: #8bdccf; color: #1a374c; font-size: 10px; font-style: normal; }
+.monitor-dock i:nth-child(2n) { background: #ecb3cb; }
+.monitor-dock i:nth-child(3) { background: #eacb9c; }
+.showcase-ring, .showcase-orb, .showcase-bolt, .showcase-spark { position: absolute; }
+.showcase-ring { width: 66px; height: 66px; border: 8px solid #57d9ec; border-radius: 50%; box-shadow: 1px 2px 0 #1b708a, inset 0 2px 1px #b0ffff80; transform: rotateX(58deg) rotateY(-15deg) rotateZ(-20deg); }
+.showcase-ring--one { top: 8%; right: 9%; }
+.showcase-ring--two { bottom: 14%; right: 6%; width: 54px; height: 54px; border-width: 6px; transform: rotateX(38deg) rotateY(25deg); }
+.showcase-orb { width: 16px; height: 16px; border-radius: 50%; background: radial-gradient(circle at 28% 23%, #8cdfff, #2396d8 60%, #185b98); box-shadow: 0 0 20px #30b0f329; }
+.showcase-orb--one { top: 16%; left: 15%; }
+.showcase-orb--two { bottom: 12%; left: 12%; width: 6px; height: 6px; background: #6bd4ce; box-shadow: 0 0 12px #69e1e4; }
+.showcase-bolt { font-size: 50px; line-height: 1; color: #61dce0; font-weight: 800; text-shadow: 2px 2px #257794; }
+.showcase-bolt--one { top: 4%; left: 34%; transform: rotate(15deg); }
+.showcase-bolt--two { bottom: 3%; right: 23%; transform: rotate(83deg); }
+.showcase-spark { color: #86c4dc; font-size: 17px; }
+.showcase-spark--one { top: 44%; left: 5%; }
+.showcase-spark--two { right: 5%; top: 46%; color: #efb6d0; font-size: 12px; }
+.showcase-footer { position: absolute; left: 7%; right: 7%; bottom: 35px; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.showcase-footer h2 { margin: 12px 0; font-size: clamp(23px, 2.1vw, 33px); line-height: 1.5; letter-spacing: .5px; font-weight: 500; text-wrap: balance; }
+.showcase-footer p { margin: 0; font-size: 10px; letter-spacing: 1.5px; color: #9fb0ca; }
+.showcase-pagination { display: grid; grid-template-columns: 1fr auto; align-items: center; column-gap: 10px; row-gap: 5px; min-width: 95px; }
+.showcase-pagination > span:first-child { grid-column: 1 / -1; color: #bdcee0; font-size: 10px; }
+.showcase-page-count { color: #82ccc9; font-size: 10px; letter-spacing: 1px; font-variant-numeric: tabular-nums; }
+.showcase-motion-toggle { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 1px solid #acc5eb35; border-radius: 50%; background: #abcaf20a; color: #b4d8e5; cursor: pointer; transition: background-color 160ms, border-color 160ms; }
+.showcase-motion-toggle:hover { background: #abcaf21f; border-color: #a2e1dd9c; }
+.showcase-motion-toggle:focus-visible, .showcase-brand:focus-visible { outline: 2px solid #9befdf; outline-offset: 5px; }
+
+@media (min-width: 861px) and (max-height: 780px) {
+    .login-product-showcase { min-height: 660px; }
+    .showcase-heading { top: 28px; }
+    .showcase-world { inset: 80px 0 165px; }
+    .showcase-footer { bottom: 25px; }
+    .showcase-footer h2 { font-size: 24px; margin: 8px 0; }
+}
+@media (max-width: 1100px) and (min-width: 861px) {
+    .preview-search { display: none; }
+    .showcase-pagination { min-width: 78px; column-gap: 4px; }
+    .showcase-footer .showcase-eyebrow { font-size: 7px; letter-spacing: 1.5px; }
+}
+@media (max-width: 860px) {
+    .login-product-showcase { min-height: 560px; }
+    .showcase-heading { top: 25px; gap: 8px; }
+    .showcase-world { inset: 72px 8% 135px; }
+    .showcase-perspective { width: 68%; left: 22%; }
+    .panel-surface { font-size: 8px; }
+    .showcase-footer { bottom: 22px; }
+    .showcase-footer h2 { font-size: 22px; margin: 7px 0; }
+    .showcase-footer h2 br { display: none; }
+    .showcase-footer .showcase-eyebrow { display: none; }
+    .showcase-ring--one { top: 4%; right: 9%; }
+    .monitor-neck { height: 48px; }
+}
+@media (max-width: 520px) {
+    .login-product-showcase { min-height: 410px; }
+    .showcase-heading { top: 16px; left: 6%; gap: 6px; }
+    .showcase-brand { font-size: 16px; gap: 8px; }
+    .showcase-brand > span { width: 28px; height: 28px; font-size: 20px; border-radius: 8px; }
+    .showcase-heading .showcase-eyebrow { font-size: 6px; letter-spacing: 1.7px; }
+    .showcase-world { inset: 80px 0 112px; }
+    .showcase-perspective { width: 66%; left: 23%; }
+    .monitor-display { border-width: 1px; border-radius: 8px; }
+    .monitor-screen { inset: 5px 4px 12px; }
+    .monitor-wordmark { bottom: 2px; font-size: 4px; }
+    .monitor-camera { width: 2px; height: 2px; top: 1px; }
+    .monitor-neck { height: 33px; }
+    .monitor-base { height: 9px; }
+    .panel-surface { font-size: 5.7px; border-radius: 4px; }
+    .preview-chrome { letter-spacing: .5px; }
+    .preview-chrome i { width: 3px; height: 3px; }
+    .preview-search { display: none; }
+    .monitor-dock { padding: 2px 3px; gap: 2px; border-radius: 3px; }
+    .monitor-dock i { width: 9px; height: 9px; font-size: 6px; border-radius: 2px; }
+    .showcase-ring { width: 37px; height: 37px; border-width: 5px; }
+    .showcase-ring--one { right: 8%; top: 0; }
+    .showcase-ring--two { right: 5%; bottom: 8%; width: 30px; height: 30px; border-width: 4px; }
+    .showcase-bolt { font-size: 30px; }
+    .showcase-bolt--one { top: 0; left: 35%; }
+    .showcase-orb--one { width: 10px; height: 10px; top: 10%; }
+    .showcase-footer { left: 6%; right: 5%; bottom: 15px; align-items: center; gap: 6px; }
+    .showcase-footer h2 { font-size: 17px; margin: 0 0 6px; letter-spacing: 0; }
+    .showcase-footer h2 br { display: block; }
+    .showcase-footer p { font-size: 7px; letter-spacing: .5px; }
+    .showcase-pagination { min-width: 80px; column-gap: 4px; row-gap: 0; }
+    .showcase-pagination > span:first-child, .showcase-page-count { font-size: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .showcase-motion-toggle { display: none; }
+}

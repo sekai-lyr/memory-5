@@ -8,8 +8,6 @@ import com.sekai.song.util.PasswordHashUtil;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -29,9 +27,6 @@ public class UserServiceImpl implements UserService {
             user.setNickName(user.getUserName());
         }
         user.setPassword(PasswordHashUtil.hash(user.getPassword()));
-        user.setLicensePlan("TRIAL");
-        user.setLicenseExpireTime(LocalDateTime.now().plusDays(7));
-        user.setLicenseCode(null);
         userMapper.insert(user);
         user.setPassword(null);
         return Result.success(user);
